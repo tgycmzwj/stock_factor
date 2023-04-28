@@ -37,7 +37,7 @@ class query_storage:
                         END AS div_tot
                         FROM __crsp_sf1_sorted;""",
             #query5: format
-            "query5_d":"""CREATE TABLE __crsp_sf3 AS
+            "query5_d":"""CREATE TABLE __crsp_sf3 AS 
                           SELECT a.*, b.dlret, b.dlstcd
                           FROM __crsp_sf2 AS a
                           LEFT JOIN crsp_{freq}sedelist AS b
@@ -272,6 +272,53 @@ class query_storage:
 					            else NULL
 					        END AS ff49
 					    FROM {data}""",
-            "query3":
+        },
+        "firms_age":{
+            "query1":"""CREATE TABLE crsp_age1 AS
+                        SELECT permco, MIN(date) AS crsp_first
+                        FROM crsp.msf
+                        GROUP BY permco;""",
+            "query2":"""CREATE TABLE comp_acc_age1 AS
+                        SELECT gvkey, datadate FROM comp.funda
+                        UNION
+                        SELECT gvkey, datadate FROM comp.g_funda;""",
+            "query3":"""CREATE TABLE comp_acc_age2 AS
+                        SELECT gvkey, MIN(datadate) AS comp_acc_first
+                        FROM comp_acc_age1
+                        GROUP BY gvkey;""",
+            "query4":"""UPDATE comp_acc_age2
+                        SET comp_acc_first = strftime('%Y%m%d', date(comp_acc_first, '-1 year'))""",
+            "query5":"""CREATE TABLE comp_acc_age1 AS 
+                        SELECT gvkey, datadate FROM comp.funda 
+                        UNION 
+                        SELECT gvkey, datadate FROM comp.g_funda;""",
+            "query6":"""CREATE TABLE comp_acc_age2 AS 
+                        SELECT gvkey, MIN(datadate) AS comp_acc_first 
+                        FROM comp_acc_age1 
+                        GROUP BY gvkey;""",
+            "query7":"""UPDATE comp_acc_age2 
+                        SET comp_acc_first = date(comp_acc_first, '-1 year'); """,
+            "query8":"""CREATE TABLE comb1 AS
+                        SELECT a.id, a.eom, MIN(b.crsp_first, c.comp_acc_first, d.comp_ret_first) AS first_obs
+                        FROM {data} AS a
+                        LEFT JOIN crsp_age1 AS b ON a.permco = b.permco
+                        LEFT JOIN comp_acc_age2 AS c ON a.gvkey = c.gvkey
+                        LEFT JOIN comp_ret_age2 AS d ON a.gvkey = d.gvkey;""",
+            "query9":"""CREATE TABLE comb2 AS
+                        SELECT *, MIN(eom) AS first_alt 
+                        FROM comb1
+                        GROUP BY id;""",
+            "query10":"""CREATE TABLE comb3 AS
+                         SELECT *, (JULIANDAY(MIN(first_obs,first_alt))-JULIANDAY(emo))/30 AS age
+                         FROM comb2;""",
+            "query11_1":"""ALTER TABLE comb3 DROP COLUMN first_obs;""",
+            "query11_2":"""ALTER TABLE comb3 DROP COLUMN first_alt;""",
+            "query12":"""CREATE TABLE {out} AS 
+                         SELECT * 
+                         FROM comb3
+                         ORDER BY id, eom;"""
+        },
+        "prepare_daily":{
+
         }
     }
