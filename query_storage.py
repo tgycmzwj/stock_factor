@@ -319,6 +319,57 @@ class query_storage:
                          ORDER BY id, eom;"""
         },
         "prepare_daily":{
-
+            "query1":"""CREATE TABLE dsf1 AS 
+                       SELECT a.excntry, a.id, a.date, a.eom, a.prc/a.adjfct AS prc_adj, 
+                           a.ret, a.ret_exc, a.dolvol AS dolvol_d, a.shares, a.tvol, b.mktrf, 
+                           b.hml, b.smb_ff, b.roe, b.inv, b.smb_hxz, a.ret_lag_dif, a.bidask,
+                           SUM(CASE WHEN a.ret_local = 0 THEN 1 ELSE 0 END) AS zero_obs
+                        FROM {data} AS a 
+                        LEFT JOIN {fcts} AS b 
+                        ON a.excntry = b.excntry AND a.date = b.date
+                        WHERE b.mktrf IS NOT NULL
+                        GROUP BY a.id, a.eom;""",
+            "query2":"""UPDATE dsf1 SET ret_exc = NULL, ret = NULL
+                        WHERE ret_lag_dif > 14;""",
+            "query3_1":"""ALTER TABLE dsf1 DROP COLUMN ret_lag_dif;""",
+            "query3_2":"""ALTER TABLE dsf1 DROP COLUMN bidask;""",
+            "query4":"""CREATE TABLE dsf1_sorted AS 
+                        SELECT * FROM dsf1 ORDER BY id,date;""",
+            "query5":"""CREATE TABLE mkt_lead_lag1 AS 
+                        SELECT excntry, date, date(date,'start of month','+1 month','-1 day') AS eom, mktrf
+                        FROM {fcts}
+                        ORDER BY excntry, date DESC;""",
+            "query6":"""CREATE TABLE mkt_lead_lag2 AS  
+                        SELECT *, 
+                            CASE 
+                                WHEN excntry=LAG(excntry) OR eom=LAG(eom) THEN LAG(mktrf) OVER (ORDER BY date) 
+                                ELSE NULL
+                            END AS mktrf_ld1
+                        FROM mkt_lead_lag1;""",
+            "query7":"""CREATE TABLE mkt_lead_lag3 AS
+                        SELECT * FROM mkt_lead_lag2 
+                        ORDER BY excntry,date;""",
+            "query8":"""CREATE TABLE mkt_lead_lag4 AS 
+                        SELECT *,
+                            CASE 
+                                WHEN excntry=LAG(excntry) when LAG(mktrf) 
+                                ELSE NULL
+                            END AS mktrf_lg1
+                        FROM mkt_lead_lag3;""",
+            "query9":"""CREATE TABLE corr_data AS 
+                        SELECT id,eom,zero_obs,
+                            CASE 
+                                WHEN ID=LAG(ID,2) THEN ret_exc+LAG(ret_exc)+LAG(ret_exc,2)
+                                ELSE NULL
+                            END AS ret_exc_31,
+                            CASE 
+                                WHEN ID=LAG(ID,2) THEN mktrf+LAG(mktrf)+LAG(mktrf,2)
+                                ELSE NULL
+                            END AS mkt_exc_31,
+                        FROM dsf1;""",
+            "query10":"""CREATE TABLE month_ends AS 
+                         SELECT DISTINCT eom
+                         FROM dsf1
+                         ORDER BY eno;""",
         }
     }
