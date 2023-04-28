@@ -2,29 +2,29 @@ class query_storage:
     query_bank={
         "prepare_crsp_sf":{
             #query1: format
-            "query1":"""create table __crsp_sf1 as 
-                        select a.permno, a.permco, a.date, (a.prc < 0) as bidask, abs(a.prc) as prc, a.shrout/1000 as shrout, abs(a.prc)*a.shrout/1000 as me,
+            "query1":"""CREATE TABLE __crsp_sf1 AS 
+                        SELECT a.permno, a.permco, a.date, (a.prc < 0) AS bidask, abs(a.prc) AS prc, a.shrout/1000 AS shrout, abs(a.prc)*a.shrout/1000 AS me,
 	                    a.ret, a.retx, a.cfacshr, a.vol, 
-		                case when a.prc > 0 and a.askhi > 0 then a.askhi else NULL end as prc_high,   
-		                case when a.prc > 0 and a.bidlo > 0 then a.bidlo else NULL end as prc_low,    
-		                b.shrcd, b.exchcd, c.gvkey, c.liid as iid, 
-		                b.exchcd in (1, 2, 3) as exch_main			
-		                from crsp_{freq}sf as a 
-		                left join crsp_{freq}senames as b
-		                on a.permno=b.permno and a.date>=namedt and a.date<=b.nameendt
-		                left join crsp_ccmxpf_lnkhist as c
-		                on a.permno=c.lpermno and (a.date>=c.linkdt or (c.linkdt IS NOT NULL)) and 
-		                (a.date<=c.linkenddt or (c.linkenddt IS NOT NULL)) and c.linktype in ('LC', 'LU', 'LS');""",
+		                CASE WHEN a.prc > 0 AND a.askhi > 0 then a.askhi ELSE NULL END AS prc_high,   
+		                CASE WHEN a.prc > 0 AND a.bidlo > 0 then a.bidlo ELSE NULL END AS prc_low,    
+		                b.shrcd, b.exchcd, c.gvkey, c.liid AS iid, 
+		                b.exchcd in (1, 2, 3) AS exch_main			
+		                FROM crsp_{freq}sf AS a 
+		                LEFT JOIN crsp_{freq}senames AS b
+		                ON a.permno=b.permno AND a.date>=namedt AND a.date<=b.nameendt
+		                LEFT JOIN crsp_ccmxpf_lnkhist as c
+		                ON a.permno=c.lpermno AND (a.date>=c.linkdt OR (c.linkdt IS NOT NULL)) AND 
+		                (a.date<=c.linkenddt or (c.linkenddt IS NOT NULL)) AND c.linktype IN ('LC', 'LU', 'LS');""",
             #query2:
-            "query2":"""update __crsp_sf1
-		                set vol = 
-			            case 
-				            when date < DATE('2001-02-01') then vol / 2
-				            when date <= DATE('2001-12-31') then vol / 1.8
-				            when date < DATE('2003-12-31') then vol / 1.6
-				            else vol
-			            end
-		                where exchcd = 3;""",
+            "query2":"""UPDATE __crsp_sf1
+		                SET vol = 
+			            CASE 
+				            WHEN date < DATE('2001-02-01') THEN vol / 2
+				            WHEN date <= DATE('2001-12-31') THEN vol / 1.8
+				            WHEN date < DATE('2003-12-31') THEN vol / 1.6
+				            ELSE vol
+			            END
+		                WHERE exchcd = 3;""",
             #query3: sort table by permno,date
             "query3":"""CREATE TABLE __crsp_sf1_sorted AS 
                         SELECT * FROM __crsp_sf1 ORDER BY permno,date;""",
@@ -371,5 +371,164 @@ class query_storage:
                          SELECT DISTINCT eom
                          FROM dsf1
                          ORDER BY eno;""",
+        },
+        "combine_crsp_comp_sf":{
+            "query1":"""CREATE TABLE __msf_world1 AS
+                        SELECT permno AS id, PERMNO AS permno, PERMCO AS permco, GVKEY AS gvkey, iid, 
+                               'USA' AS excntry, exch_main, CASE WHEN shrcd IN (10, 11, 12) THEN 1 ELSE 0 END AS common, 
+                               1 AS primary_sec, bidask, shrcd AS crsp_shrcd, exchcd AS crsp_exchcd, 
+                               '' AS comp_tpci, NULL AS comp_exchg, 'USD' AS curcd, 1 AS fx, date, 
+                               strftime('%Y%m%e', date(date, 'start of month', '+1 month')) AS eom, 
+                               cfacshr AS adjfct, shrout AS shares, me, me_company, prc, prc AS prc_local, 
+                               prc_high, prc_low, dolvol, vol AS tvol, RET AS ret, ret AS ret_local, ret_exc, 
+                               1 AS ret_lag_dif, div_tot, NULL AS div_cash, NULL AS div_spc, 1 AS source_crsp 
+                        FROM {crsp_msf}
+                        UNION ALL 
+                        SELECT 
+                            CASE 
+                                WHEN instr(iid,'W')>0 THEN CAST('3'||gvkey||substr(iid,1,2) AS INTEGER) 
+                                WHEN instr(iid,'C')>0 THEN CAST('2'||gvkey||substr(iid,1,2) AS INTEGER) 
+                                ELSE CAST('1'||gvkey||substr(iid,1,2) AS INTEGER) 
+                            END AS id, 
+                        NULL AS permno, NULL AS permco, gvkey, iid, excntry, exch_main, 
+                        CASE WHEN tpci = '0' THEN 1 ELSE 0 END AS common, primary_sec, 
+                        CASE WHEN prcstd = 4 THEN 1 ELSE 0 END AS bidask, NULL AS crsp_shrcd, NULL AS crsp_exchcd, 
+                        comp_tpci, exchg AS comp_exchg, curcdd AS curcd, fx, datadate AS date, 
+                        strftime('%Y%m%e', date(datadate, 'start of month', '+1 month')) AS eom, 
+                        ajexdi AS adjfct, cshoc AS shares, me, me AS me_company, prc, prc_local, 
+                        prc_high, prc_low, dolvol, cshtrm AS tvol, ret_local, ret, ret_exc, ret_lag_dif, 
+                        div_tot, div_cash, div_spc, 0 AS source_crsp 
+                        FROM {comp_msf};"""
+        },
+        "mispricing_factors":{
+            "query1":"""CREATE TABLE chars1 AS 
+                        SELECT id, eom, excntry, chcsho_12m, eqnpo_12m, oaccruals_at, noa_at, at_gr1, 
+                            ppeinv_gr1a, o_score, ret_12_1, gp_at, niq_at
+                        FROM data
+                        WHERE common=1 AND primary_sec=1 AND obs_main=1 AND exch_main = 1 AND ret_exc IS NOT NULL AND me IS NOT NULL
+                        ORDER BY excntry, eom;""",
+            "query2":"""CREATE TEMP TABLE __subset AS
+                        SELECT *
+                        FROM chars1
+                        GROUP BY excntry, eom
+                        HAVING COUNT({v}) >= {min_stks};""",
+            "query3":"""CREATE TABLE chars{nums1} AS 
+                        SELECT a.*, b.rank_{v}
+                        FROM chars{nums2} AS a
+                        LEFT JOIN __ranks AS b 
+                        ON a.id=b.id AND a.eom=b.eom;""",
+        },
+        "add_helper_vars":{
+            "query1":"""CREATE TABLE __comp_dates1 AS
+                        SELECT gvkey, curcd, MIN(datadate) AS start_date, MAX(datadate) AS end_date
+                        FROM {data}
+                        GROUP BY gvkey, curcd;""",
+            "query2":"""CREATE TABLE __helpers1 AS 
+                        SELECT a.gvkey, a.curcd, a.datadate, b.*, 
+                            CASE WHEN b.gvkey IS NOT NULL THEN 1 ELSE 0 END AS data_available
+                        FROM __comp_dates2 AS a
+                        LEFT JOIN {data} AS b ON a.gvkey=b.gvkey AND a.curcd=b.curcd AND a.datadate=b.datadate;""",
+            "query3":"""CREATE TABLE __helpers1_sorted AS 
+                        SELECT * FROM (
+                        SELECT *, ROW_NUMBER() OVER (
+                            PARTITION BY gvkey,curcd,datadate 
+                            ORDER BY gvkey,curcd,datadate) 
+                            AS row_number    
+                        FROM table) 
+                        AS rows WHERE row_number = 1;""",
+            "query4":"""CREATE TABLE __helpers2 AS 
+                        SELECT *, ROW_NUMBER() OVER (
+                            PARTITION BY gvkey,curcd
+                            ORDER BY gvkey,curcd
+                        ) AS count
+                        FROM __helpers1_sorted;""",
+            "query5":"""UPDATE __helpers2
+		                SET {variable} = 
+			            CASE 
+				            WHEN {varibale}<0 THEN NULL
+				            ELSE {variable}
+			            END;""",
+            "query6":"""CREATE TABLE {out} AS
+                        SELECT 
+                        COALESCE(sale,revt) AS sale_x,
+                        COALESCE(gp,sale_x-cogs) AS gp_x,
+                        coalesce(xopr,cogs+xsga) as opex_x,
+                        coalesce(ebitda, oibdp, sale_x-opex_x, gp_x-xsga) as ebitda_x,
+		        		coalesce(ebit, oiadp, ebitda_x-dp) as ebit_x,
+		                ebitda_x + coalesce(xrd, 0) as op_x,
+		                ebitda_x-xint as ope_x,
+		                coalesce(pi, ebit_x-xint+coalesce(spi,0)+coalesce(nopi,0)) as pi_x,
+		                coalesce(xido, xi+coalesce(do, 0)) as xido_x,
+		                coalesce(ib, ni-xido_x, pi_x - txt - coalesce(mii, 0)) as ni_x,
+		                coalesce(ni, ni_x+coalesce(xido_x, 0), ni_x + xi + do) as nix_x,
+		                nix_x+xint as fi_x,  
+		     			coalesce(dvt, dv) as div_x,
+		     			coalesce(prstkc,0)+coalesce(purtshr,0) as eqbb_x,
+		                sstk as eqis_x,
+		                coalesce(eqis_x,0)+coalesce(-eqbb_x,0) as eqnetis_x,
+		                div_x+eqbb_x as eqpo_x,
+		                div_x-eqnetis_x as eqnpo_x,
+		                case 
+		                    when dltis is null and dltr is null and ltdch is null and count<=12 then null
+		                    else coalesce(coalesce(dltis,0)+coalesce(-dltr,0),ltdch, dltt-lag(dltt,12) over(partition by gvkey,curcd order by gvkey curcd)) 
+		                end as dltnetis_x, 
+		                case 
+		                    when dlcch is null and count<=12 then null
+		                    else coalesce(dlcch, dlc-lag(dlc,12) over(partition by gvkey,curcd order by gvkey curcd))
+		                end as dstnetis_x,
+		                coalesce(dstnetis_x,0)+coalesce(dltnetis_x,0) as dbnetis_x,
+                        eqnetis_x+dbnetis_x as netis_x,
+                        coalesce(fincf, netis_x-dv+coalesce(fiao, 0)+coalesce(txbcof, 0)) as fincf_x,
+		
+                        coalesce(dltt,0)+coalesce(dlc,0) as debt_x
+                        coalesce(pstkrv, pstkl, pstk) as pstk_x,
+                        coalesce(seq, ceq+coalesce(pstk_x, 0), at-lt) as seq_x,
+                        coalesce(at, seq_x + dltt + coalesce(lct, 0) + coalesce(lo, 0) + coalesce(txditc, 0)) as at_x, 
+                        coalesce(act, rect+invt+che+aco) as ca_x,
+                        at_x-ca_x as nca_x,
+                        coalesce(lct, ap+dlc+txp+lco) as cl_x,
+                        lt-cl_x as ncl_x,
+                        
+                        debt_x - coalesce(che, 0) as netdebt_x,
+                        coalesce(txditc, sum(txdb, itcb)) as txditc_x,
+                        seq_x+coalesce(txditc_x, 0)-coalesce(pstk_x, 0) as be_x,
+                        coalesce(icapt+coalesce(dlc, 0)-coalesce(che, 0), netdebt_x+seq_x+coalesce(mib, 0)) as bev_x,
+                        
+                        ca_x-che as coa_x,
+                        cl_x-coalesce(dlc, 0) as col_x,
+                        coa_x-col_x as cowc_x,
+                        at_x-ca_x-coalesce(ivao, 0) as ncoa_x,
+                        lt-cl_x-dltt as ncol_x,
+                        ncoa_x-ncol_x as nncoa_x,
+                        coalesce(ivst,0)+coalesce(ivao,0) as fna_x,
+                        debt_x+coalesce(pstk_x,0) as fnl_x,
+                        fna_x-fnl_x as nfna_x,
+                        coa_x+ncoa_x as oa_x,
+                        col_x+ncol_x as ol_x,
+                        oa_x-ol_x as noa_x,
+                        ppent+intan+ao-lo+dp as lnoa_x,
+                        
+                        coalesce(ca_x-invt, che+rect) as caliq_x,
+                        ca_x-cl_x as nwc_x,
+                        ppegt + invt as ppeinv_x,
+                        che+0.75*coa_x+0.5*(at_x-ca_x-coalesce(intan,0)) as aliq_x,
+                        
+                        case 
+                            when count<=12 then null
+                            else coalesce(ni_x-oancf, cowc_x-lag(cowc_x,12) over(partition by gvkey,curcd order by gvkey curcd)+nncoa_x-lag(nncoa_x) over(partition by gvkey,curcd order by gvkey curcd)) 
+                        end as oacc_x,
+                        case 
+                            when count<=12 then null
+                            else oacc_x+nfna_x-lag(nfna_x) over(partition by gvkey,curcd order by gvkey curcd) 
+                        end as tacc_x,
+                        coalesce(oancf,ni_x-oacc_x,ni_x+dp-coalesce(wcapt,0)) as ocf_x, 
+                        ocf_x-capx as fcf_x,
+                        bitda_x + coalesce(xrd, 0) - oacc_x as cop_x
+                        FROM __helpers2""",
+            "query7":"""ALTER TABLE {out} DROP COLUMN count;""",
+            "query8_1":"""DROP TABLE IF EXISTS __comp_dates1;""",
+            "query8_2":"""DROP TABLE IF EXISTS __comp_dates2;""",
+            "query8_3":"""DROP TABLE IF EXISTS __helpers1;""",
+            "query8_4":"""DROP TABLE IF EXISTS __helpers2;""",
         }
     }
