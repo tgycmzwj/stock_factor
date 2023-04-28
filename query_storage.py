@@ -530,5 +530,26 @@ class query_storage:
             "query8_2":"""DROP TABLE IF EXISTS __comp_dates2;""",
             "query8_3":"""DROP TABLE IF EXISTS __helpers1;""",
             "query8_4":"""DROP TABLE IF EXISTS __helpers2;""",
+        },
+        "crsp_industry":{
+            "query1":"""CREATE TABLE permno0 AS
+                        SELECT DISTINCT permno,permco,namedt,nameendt,siccd AS sic,cast(naics AS INTEGER) AS naics
+                        FROM crsp.dsenames
+                        ORDER BY permno, namedt, nameendt;""",
+            "query2":"""UPDATE permno0
+                        SET sic=
+                        CASE 
+                            WHEN sic IS NULL THEN -999
+                            WHEN sic=0 THEN -999
+                            WHEN naics IS NULL THEN -999
+                            ELSE sic
+                        END;""",
+            "query3":"""UPDATE permno0
+                        SET permno_diff=julianday(nameendt)-julianday(namedt)
+                        END;""",
+            "query4":"""CREATE TABLE permno2 AS 
+                        SELECT * FROM permno0
+                        ORDER BY permno,namedt,nameendt""",
+
         }
     }
