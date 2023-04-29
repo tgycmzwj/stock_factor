@@ -98,6 +98,11 @@ class query_storage:
             "query11_7":"DROP TABLE IF EXISTS __crsp_sf5",
             "query11_8":"DROP TABLE IF EXISTS __crsp_sf6",
         },
+
+
+
+
+
         "prepare_comp_sf":{
             "query1":"""CREATE TABLE __firm_shares1 AS 
                         SELECT gvkey, datadate, cshoq AS csho_fund, ajexq AS ajex_fund 

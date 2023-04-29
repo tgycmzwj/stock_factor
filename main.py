@@ -1,14 +1,17 @@
+#external dependencies
 import numpy as np
 import pandas as pd
 import wrds
 import os
 os.environ["SQLITE_TMPDIR"]="/kellogg/proj/wzi1638/stock_factor/temp"
 import sqlite3
+
+#project dependencies
 from macro_config import macro_config
 from pull_raw_wrds import pull_raw_wrds
 from query_storage import query_storage
 from prepare_crsp_sf import prepare_crsp_sf
-
+from prepare_comp_sf import prepare_comp_sf
 
 #establish connection to sql
 config=macro_config()
@@ -17,15 +20,18 @@ db=wrds.Connection(wrds_username=config.wrds_username)
 conn=sqlite3.connect(config.db)
 cursor=conn.cursor()
 query_bank=query_storage()
-queries=query_bank.query_bank["prepare_crsp_sf"]
 
 
-#download data
+# #download data
 # pull_raw_wrds(config.datasets,db,conn,cursor)
 
-#process us data from crsp
+# #process us data from crsp
+# queries=query_bank.query_bank["prepare_crsp_sf"]
 # prepare_crsp_sf(conn,cursor,queries,"m")
-prepare_crsp_sf(conn,cursor,queries,"d")
+# prepare_crsp_sf(conn,cursor,queries,"d")
 
+#process world data from compustat
+queries=query_bank.query_bank["prepare_comp_sf"]
+prepare_comp_sf(conn,cursor,queries,"m")
 
 print("finished")
