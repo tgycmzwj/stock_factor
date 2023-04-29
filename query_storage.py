@@ -113,8 +113,22 @@ class query_storage:
                         FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
-            "query2":""" """,
+            "query2":"""CREATE TABLE __temp AS 
+                        SELECT * FROM (
+                        SELECT *, ROW_NUMBER() OVER (
+                            PARTITION BY {idvar},{datevar} 
+                            ORDER BY {idvar},{datevar}) 
+                            AS row_number    
+                        FROM table) 
+                        AS rows WHERE row_number = 1;""",
         },
+
+
+
+
+
+
+
         "add_primary_sec":{
             "query1":"""CREATE TABLE __prihistrow AS 
                         SELECT gvkey,itemvalue AS prihistrow,effdate,thrudate 
