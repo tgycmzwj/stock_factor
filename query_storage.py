@@ -79,7 +79,7 @@ class query_storage:
             "query8":"""CREATE TABLE __crsp_sf6 AS 
                         SELECT *,SUM(me) AS me_company
                         FROM __crsp_sf5
-                        GROUP BY permco,date;""",
+                       git  GROUP BY permco,date;""",
             "query9":"""UPDATE __crsp_sf6
 			            SET vol=vol*100,dolvol=dolvol*100;
 		                """,
