@@ -116,11 +116,30 @@ class query_storage:
             "query2":"""CREATE TABLE __temp AS 
                         SELECT * FROM (
                         SELECT *, ROW_NUMBER() OVER (
-                            PARTITION BY {idvar},{datevar} 
-                            ORDER BY {idvar},{datevar}) 
+                            PARTITION BY gvkey,datadate
+                            ORDER BY gvkey,datadate DESCENDING) 
                             AS row_number    
                         FROM __firm_shares1) 
                         AS rows WHERE row_number = 1;""",
+            "query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
+            "query3":"""WITH __temp1 AS (
+                            SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESCENDING) AS following,
+                                ROW_NUMBER() OVER (PARITION BY gvkey ORDER BY datadate DESCENDING) AS row_number
+                            FROM __temp
+                        ),
+                        __temp2 AS (
+                            SELECT *,DATE(datadate,'+12 months','start of month','+1 months','-1 days') AS forward_max,
+                                CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
+                                JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
+                            FROM __temp1
+                        ),
+                        CREATE TABLE __firm_shares2 AS 
+                        SELECT *,DATE(datadate,'+'+CASE(n as text)+' days','start of month','+1 months','-1 days') AS ddate
+                        FROM __temp2;
+            """,
+            "query3_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
+            "query3_2":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
+            "query3_5":"""DROP TABLE IF EXISTS __temp"""
         },
 
 
