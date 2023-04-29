@@ -132,7 +132,7 @@ class query_storage:
                               JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
                           FROM __temp1;""",
             "query3_3":"""CREATE TABLE __firm_shares2 AS 
-                          SELECT *,DATE(datadate,'+'+CASE(n as text)+' days','start of month','+1 months','-1 days') AS ddate
+                          SELECT *,DATE(datadate,'+'+CAST(n as text)+' days','start of month','+1 months','-1 days') AS ddate
                           FROM __temp2;""",
             "query4_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
             "query4_2":"""ALTER TABLE __firm_shares2 RENAME COLUMN following_new TO following;""",
