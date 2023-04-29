@@ -123,8 +123,8 @@ class query_storage:
                         AS rows WHERE row_number = 1;""",
             "query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3":"""WITH __temp1 AS (
-                            SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESCENDING) AS following,
-                                ROW_NUMBER() OVER (PARITION BY gvkey ORDER BY datadate DESCENDING) AS row_number
+                            SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
+                                ROW_NUMBER() OVER (PARITION BY gvkey ORDER BY datadate DESC) AS row_number
                             FROM __temp
                         ),
                         __temp2 AS (
