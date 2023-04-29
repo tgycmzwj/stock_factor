@@ -31,6 +31,10 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     cursor.fetchall()
     print("finished query 3_3 at time "+time.asctime())
 
+    cursor.execute(queries["query3_4"])
+    cursor.fetchall()
+    print("finished query 3_3 at time "+time.asctime())
+
     #query4
     for i in range(1,10):
         cursor.execute(queries["query4_{}".format(i)])
