@@ -131,14 +131,14 @@ class query_storage:
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                               JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
                           FROM __temp1;""",
-            "query3_4":"""CREATE TABLE __firm_shares2 AS 
+            "query3_3":"""CREATE TABLE __firm_shares2 AS 
                           SELECT *,DATE(datadate,'+'+CASE(n as text)+' days','start of month','+1 months','-1 days') AS ddate
                           FROM __temp2;""",
             "query4_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
-            "query4_2":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
+            "query4_2":"""ALTER TABLE __firm_shares2 RENAME COLUMN following_new TO following;""",
             "query4_3":"""DROP TABLE IF EXISTS __temp""",
             "query4_4": """DROP TABLE IF EXISTS __temp1""",
-            "query4_3":"""DROP TABLE IF EXISTS __temp2"""
+            "query4_5":"""DROP TABLE IF EXISTS __temp2"""
 
     },
 
