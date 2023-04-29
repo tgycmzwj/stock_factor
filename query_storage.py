@@ -124,14 +124,14 @@ class query_storage:
             "query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3_1":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
-                                ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number
+                                ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
+                                DATE(datadate,'+12 months','start of month','+1 months','-1 days') AS forward_max
                             FROM __temp;""",
             "query3_2":"""CREATE TABLE __temp2 AS 
-                          SELECT *,DATE(datadate,'+12 months','start of month','+1 months','-1 days') AS forward_max,
-                              CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
+                          SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                               JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
                           FROM __temp1;""",
-            "query3_3":"""CREATE TABLE __firm_shares2 AS 
+            "query3_4":"""CREATE TABLE __firm_shares2 AS 
                           SELECT *,DATE(datadate,'+'+CASE(n as text)+' days','start of month','+1 months','-1 days') AS ddate
                           FROM __temp2;""",
             "query4_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
