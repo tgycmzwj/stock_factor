@@ -117,7 +117,7 @@ class query_storage:
                         SELECT * FROM (
                         SELECT *, ROW_NUMBER() OVER (
                             PARTITION BY gvkey,datadate
-                            ORDER BY gvkey,datadate DESCENDING) 
+                            ORDER BY gvkey,datadate DESC) 
                             AS row_number    
                         FROM __firm_shares1) 
                         AS rows WHERE row_number = 1;""",
