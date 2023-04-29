@@ -126,7 +126,7 @@ class query_storage:
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number
                             FROM __temp;""",
-            "query3_2":"""CREATE TABLE __temp2 AS (
+            "query3_2":"""CREATE TABLE __temp2 AS 
                           SELECT *,DATE(datadate,'+12 months','start of month','+1 months','-1 days') AS forward_max,
                               CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                               JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
