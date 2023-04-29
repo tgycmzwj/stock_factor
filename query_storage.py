@@ -119,7 +119,7 @@ class query_storage:
                             PARTITION BY {idvar},{datevar} 
                             ORDER BY {idvar},{datevar}) 
                             AS row_number    
-                        FROM table) 
+                        FROM __firm_shares1) 
                         AS rows WHERE row_number = 1;""",
         },
 
@@ -453,7 +453,7 @@ class query_storage:
                             PARTITION BY gvkey,curcd,datadate 
                             ORDER BY gvkey,curcd,datadate) 
                             AS row_number    
-                        FROM table) 
+                        FROM __helpers1) 
                         AS rows WHERE row_number = 1;""",
             "query4":"""CREATE TABLE __helpers2 AS 
                         SELECT *, ROW_NUMBER() OVER (
