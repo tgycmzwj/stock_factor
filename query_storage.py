@@ -138,8 +138,9 @@ class query_storage:
             "query4_2":"""ALTER TABLE __firm_shares2 RENAME COLUMN following_new TO following;""",
             "query4_3":"""DROP TABLE IF EXISTS __temp""",
             "query4_4": """DROP TABLE IF EXISTS __temp1""",
-            "query4_5":"""DROP TABLE IF EXISTS __temp2"""
-
+            "query4_5":"""DROP TABLE IF EXISTS __temp2""",
+            "query4_6":"ALTER TABLE __firm_shares DROP COLUMN forward_max;",
+            "query4_7":"ALTER TABLE __firm_shares DROP COLUMN n;"
     },
 
 
