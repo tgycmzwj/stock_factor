@@ -124,7 +124,7 @@ class query_storage:
             "query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3":"""WITH __temp1 AS (
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
-                                ROW_NUMBER() OVER (PARITION BY gvkey ORDER BY datadate DESC) AS row_number
+                                ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number
                             FROM __temp
                         ),
                         __temp2 AS (
