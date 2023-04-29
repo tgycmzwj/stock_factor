@@ -316,3 +316,23 @@ acc_chars=[
     "cfoa_ch5",
     "gmar_ch5"
 ]
+
+macro_chars=[
+
+	# Market Based Size Variables
+	"market_equity",
+	# Total Dividend Paid to Market Equity
+	"div1m_me","div3m_me","div6m_me","div12m_me",
+	# Special Dividend Paid to Market Equity
+	"divspc1m_me","divspc12m_me",
+	# Change in Shares Outstanding
+	"chcsho_1m","chcsho_3m","chcsho_6m","chcsho_12m",
+	# Net Equity Payout
+	"eqnpo_1m","eqnpo_3m","eqnpo_6m","eqnpo_12m",
+	# Momentum/Reversal
+	"ret_1_0","ret_2_0","ret_3_0","ret_3_1","ret_6_0","ret_6_1 ret_9_0","ret_9_1","ret_12_0","ret_12_1","ret_12_7","ret_18_1","ret_24_1","ret_24_12",
+	"ret_36_1","ret_36_12","ret_48_1","ret_48_12","ret_60_1","ret_60_12","ret_60_36",
+	# Seasonality
+	"seas_1_1an","seas_2_5an","seas_6_10an","seas_11_15an","seas_16_20an",
+	"seas_1_1na","seas_2_5na","seas_6_10na","seas_11_15na","seas_16_20na",
+]

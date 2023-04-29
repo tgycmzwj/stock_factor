@@ -550,6 +550,27 @@ class query_storage:
             "query4":"""CREATE TABLE permno2 AS 
                         SELECT * FROM permno0
                         ORDER BY permno,namedt,nameendt""",
-
+            "query5_1":"""CREATE TABLE permno3 AS
+                        SELECT * FROM permno2;""",
+            "query5_2":"""UPDATE permno3
+                          SET namedt=DATE(namedt,'{} days')""",
+            "query5_3":"""ALTER TABLE permno3 DROP COLUMN nameendt;""",
+            "query5_4":"""ALTER TABLE permno3 DROP COLUMN nameendt;""",
+            "query6":"""CREATE TABLE permno4 AS
+                        SELECT *, CASE WHEN sic = -999 THEN NULL ELSE sic END AS sic, 
+                        CASE WHEN naics = -999 THEN NULL ELSE naics END AS naics,
+                        date=namedt
+                        FROM permno0;""",
+            "query6_1":"""ALTER TABLE permno4 DROP COLUMN namedt;""",
+            "query7":"""CREATE TABLE {out} AS 
+                        SELECT DISTINCT * FROM permno4
+                        ORDER BY permno,date;""",
+            "query8_1":"""DROP TABLE IF EXISTS permno0;""",
+            "query8_2": """DROP TABLE IF EXISTS permno2;""",
+            "query8_3": """DROP TABLE IF EXISTS permno3;""",
+            "query8_4": """DROP TABLE IF EXISTS permno4;""",
+        },
+        "create_acc_chars":{
+            ""
         }
     }
