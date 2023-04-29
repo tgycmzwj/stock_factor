@@ -140,7 +140,7 @@ class query_storage:
                             PARTITION BY gvkey,datadate,ddate
                             ORDER BY gvkey,datadate,ddate) 
                             AS row_number    
-                        FROM __firm_shares1) 
+                        FROM __temp3) 
                         AS rows WHERE row_number = 1;""",
             "query4_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
             "query4_2":"""ALTER TABLE __firm_shares2 RENAME COLUMN following_new TO following;""",
