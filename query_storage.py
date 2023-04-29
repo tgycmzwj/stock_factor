@@ -132,7 +132,7 @@ class query_storage:
                                 CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                                 JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS n
                             FROM __temp1
-                        ),
+                        )
                         CREATE TABLE __firm_shares2 AS 
                         SELECT *,DATE(datadate,'+'+CASE(n as text)+' days','start of month','+1 months','-1 days') AS ddate
                         FROM __temp2;
