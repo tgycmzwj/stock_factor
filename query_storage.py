@@ -106,11 +106,11 @@ class query_storage:
         "prepare_comp_sf":{
             "query1":"""CREATE TABLE __firm_shares1 AS 
                         SELECT gvkey, datadate, cshoq AS csho_fund, ajexq AS ajex_fund 
-                        FROM comp.fundq 
+                        FROM comp_fundq 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND cshoq IS NOT NULL AND ajexq IS NOT NULL 
                         UNION 
                         SELECT gvkey, datadate, csho AS csho_fund, ajex AS ajex_fund 
-                        FROM comp.funda 
+                        FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
             "query2":""" """,
@@ -118,22 +118,22 @@ class query_storage:
         "add_primary_sec":{
             "query1":"""CREATE TABLE __prihistrow AS 
                         SELECT gvkey,itemvalue AS prihistrow,effdate,thrudate 
-                        FROM comp.g_sec_history 
+                        FROM comp_g_sec_history 
                         WHERE item = 'PRIHISTROW';""",
             "query2":"""CREATE TABLE __prihistusa AS 
                         SELECT gvkey,itemvalue AS prihistusa,effdate,thrudate
-                        FROM comp.sec_history 
+                        FROM comp_sec_history 
                         WHERE item='PRIHISTUSA';""",
             "query3":"""CREATE TABLE __prihistcan AS 
                         SELECT gvkey, itemvalue AS prihistcan, effdate, thrudate
-                        FROM comp.sec_history 
+                        FROM comp_sec_history 
                         WHERE item = 'PRIHISTCAN';""",
             "query4":""" CREATE TABLE __header AS
                          SELECT gvkey, MAX(prirow) AS prirow, MAX(priusa) AS priusa, MAX(prican) AS prican 
                          FROM (
-                         SELECT gvkey, prirow, priusa, prican FROM comp.company
+                         SELECT gvkey, prirow, priusa, prican FROM comp_company
                          UNION ALL
-                         SELECT gvkey, prirow, priusa, prican FROM comp.g_company
+                         SELECT gvkey, prirow, priusa, prican FROM comp_g_company
                          )
                          GROUP BY gvkey;""",
             "query5":"""CREATE TABLE __header_sorted AS 
@@ -284,9 +284,9 @@ class query_storage:
                         FROM crsp.msf
                         GROUP BY permco;""",
             "query2":"""CREATE TABLE comp_acc_age1 AS
-                        SELECT gvkey, datadate FROM comp.funda
+                        SELECT gvkey, datadate FROM comp_funda
                         UNION
-                        SELECT gvkey, datadate FROM comp.g_funda;""",
+                        SELECT gvkey, datadate FROM comp_g_funda;""",
             "query3":"""CREATE TABLE comp_acc_age2 AS
                         SELECT gvkey, MIN(datadate) AS comp_acc_first
                         FROM comp_acc_age1
@@ -294,9 +294,9 @@ class query_storage:
             "query4":"""UPDATE comp_acc_age2
                         SET comp_acc_first = strftime('%Y%m%d', date(comp_acc_first, '-1 year'))""",
             "query5":"""CREATE TABLE comp_acc_age1 AS 
-                        SELECT gvkey, datadate FROM comp.funda 
+                        SELECT gvkey, datadate FROM comp_funda 
                         UNION 
-                        SELECT gvkey, datadate FROM comp.g_funda;""",
+                        SELECT gvkey, datadate FROM comp_g_funda;""",
             "query6":"""CREATE TABLE comp_acc_age2 AS 
                         SELECT gvkey, MIN(datadate) AS comp_acc_first 
                         FROM comp_acc_age1 
