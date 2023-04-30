@@ -339,5 +339,14 @@ macro_chars=[
 common_vars=["gvkey","iid","datadate","eom","tpci","exchg","curcdd","prc_local","prc_high",
              "prc_low","ajexdi","cshoc","ri_local","fx","prc","me","cshtrm","dolvol","ri",
              "div_tot","div_cash","div_spc"]
-
+avars_inc=["sale","revt","gp","ebitda","oibdp","ebit","oiadp","pi","ib","ni","mii",
+           "cogs","xsga","xopr","xrd","xad","xlr","dp","xi","do","xido","xint","spi",
+           "nopi","txt","dvt"]
+avars_cf=["oancf","ibc","dpc","xidoc","capx","ibc","dpc","wcapt","fincf","fiao","txbcof",
+          "ltdch","dltis","dltr","dlcch","purtshr","prstkc","sstk","dv dvc"]
+avars_bs=["at","act","aco","che","invt","rect","ivao","ivst","ppent","ppegt","intan",
+          "ao","gdwl","re","lt","lct","dltt","dlc","txditc","txdb","itcb","txp","ap",
+          "lco","lo","seq","ceq","pstkrv","pstkl","pstk","mib","icapt"]
+avars_other=["emp"]
+avars=avars_inc+avars_cf+avars_cf+avars_other
 special_exchanges=(0,1,2,3,4,15, 16,17,18,21,13,19,20,127,150,157,229,263,269,281,283,290,320,326,341,342,347,348,349,352)

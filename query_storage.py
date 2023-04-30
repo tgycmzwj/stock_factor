@@ -924,5 +924,54 @@ class query_storage:
                             WHEN id_lead1m!=id AND ret_lag_dif_lead1m!=ret_lag_dif THEN NULL
                             ELSE ret_exc_lead1m
                         END;""",
+            "query3":"""CREATE TABLE __dsf_world1 AS
+		                SELECT permno AS id,'USA' AS excntry,exch_main, 
+		                    CASE WHEN shrcd in (10, 11, 12) THEN 1 ELSE 0 AS common, 1 AS primary_sec,
+		                    bidask,'USD' AS curcd,1 AS fx,DATE AS date, DATE(DATE,'end of month') AS eom,
+		   	                cfacshr AS adjfct,shrout AS shares,me,dolvol,vol AS tvol,prc,prc_high,prc_low,
+		   	                ret AS ret_local,RET AS ret,ret_exc,1 AS ret_lag_dif,1 AS source_crsp 
+		                FROM {crsp_dsf}
+		                UNION
+		                SELECT 
+		                    CASE
+		                        WHEN iid LIKE '/W/%' THEN input(cats('3', gvkey, substr(iid, 1, 2)), 9.0)
+				                WHEN iid LIKE '/W/%' THEN input(cats('2', gvkey, substr(iid, 1, 2)), 9.0)
+				                ELSE input(cats('1', gvkey, SUBSTR(iid, 1, 2)), 9.0)                           
+			                END AS id, excntry, exch_main, 
+			                CASE WHEN tpci='0' THEN 1 ELSE 0 AS common, primary_sec,
+			                CASE WHEN prcstd=4 THEN 1 ELSE 0 as bidask, curcdd AS curcd, fx, 
+			                datadate AS date, DATE(datadate,'end of month') as eom, ajexdi AS adjfct,
+			                cshoc AS shares, me, dolvol, cshtrd AS tvol, prc, prc_high, prc_low,
+		   	                ret_local, ret, ret_exc, ret_lag_dif, 0 as source_crsp
+		                FROM {comp_dsf};""",
+            "query4":"""CREATE TABLE __obs_main AS
+		                SELECT id,gvkey,iid,eom, 
+		                    CASE WHEN (COUNT(gvkey) IN (0,1) OR (COUNT(gvkey)>1 AND source_crsp=1)) THEN 1 ELSE 0 AS obs_main
+		                FROM __msf_world2
+		                GROUP BY gvkey, iid, eom;""",
+		    "query5":"""CREATE TABLE __msf_world3 AS
+		                SELECT a.*, b.obs_main
+		                FROM __msf_world2 AS a 
+		                LEFT JOIN __obs_main AS b
+		                ON a.id=b.id AND a.eom=b.eom;""",
+		    "query6":"""CREATE TABLE __dsf_world2 AS
+		                SELECT a.*, b.obs_main
+		                FROM __dsf_world1 AS a 
+		                LEFT JOIN __obs_main AS b
+		                ON a.id=b.id and a.eom=b.eom;""",
+            "query7_1":"""CREATE TABLE {out_msf} AS 
+                          SELECT DISTINCT * 
+                          FROM __msf_world3
+                          ORDER BY id eom;""",
+            "query7_2":"""CREATE TABLE {out_dsf} AS 
+                          SELECT DISTINCT * 
+                          FROM __dsf_world3
+                          ORDER BY id eom;""",
+            "query8_1":"DROP TABLE IF EXISTS __msf_world1;",
+            "query8_2": "DROP TABLE IF EXISTS __msf_world2;",
+            "query8_3": "DROP TABLE IF EXISTS __msf_world3;",
+            "query8_4": "DROP TABLE IF EXISTS __dsf_world1;",
+            "query8_5": "DROP TABLE IF EXISTS __dsf_world2;",
+            "query8_6": "DROP TABLE IF EXISTS __obs_main;",
         }
     }
