@@ -336,3 +336,8 @@ macro_chars=[
 	"seas_1_1an","seas_2_5an","seas_6_10an","seas_11_15an","seas_16_20an",
 	"seas_1_1na","seas_2_5na","seas_6_10na","seas_11_15na","seas_16_20na",
 ]
+common_vars=["gvkey","iid","datadate","eom","tpci","exchg","curcdd","prc_local","prc_high",
+             "prc_low","ajexdi","cshoc","ri_local","fx","prc","me","cshtrm","dolvol","ri",
+             "div_tot","div_cash","div_spc"]
+
+special_exchanges=(0,1,2,3,4,15, 16,17,18,21,13,19,20,127,150,157,229,263,269,281,283,290,320,326,341,342,347,348,349,352)

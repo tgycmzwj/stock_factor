@@ -820,5 +820,109 @@ class query_storage:
         },
         "create_acc_chars":{
             ""
+        },
+        "comp_exchanges":{
+            "query1":"""CREATE TABLE __ex_country1 AS
+                        SELECT DISTINCT exchg,excntry FROM comp.g_security
+                        UNION
+                        SELECT DISTINCT exchg,excntry FROM comp.security;""",
+		    "query2":"""CREATE TABLE __ex_country2 AS
+		                SELECT DISTINCT exchg,
+			            CASE
+				            WHEN COUNT(excntry)>1 THEN 'multi_national' 
+				            ELSE excntry
+			            END AS excntry
+		                FROM __ex_country1
+		                WHERE excntry IS NOT NULL AND NOT exchg IS NOT NULL
+		                GROUP BY exchg;""",
+		    "query3":"""CREATE TABLE __ex_country3 AS
+		                SELECT a.*, b.exchgdesc
+		                FROM __ex_country2 AS a 
+		                LEFT JOIN comp.r_ex_codes AS b
+		                ON a.exchg=b.exchgcd;""",
+		    "query4":"""CREATE TABLE {out} AS
+		                SELECT *, (excntry!='multi_national' AND exchg NOT IN {special_exchanges}) AS exch_main
+		                FROM __ex_country3;""",
+            "query5_1":"""DROP TABLE IF EXISTS __ex_country1;""",
+            "query5_2":"""DROP TABLE IF EXISTS __ex_country2;""",
+            "query5_3":"""DROP TABLE IF EXISTS __ex_country3;""",
+        },
+        "market_returns":{
+            "query1":"""CREATE TABLE __common_stocks1 AS
+		                SELECT DISTINCT source_crsp, id, date, eom, excntry, obs_main, exch_main, primary_sec, common, ret_lag_dif, me, dolvol, ret, ret_local, ret_exc
+		                FROM {data}
+		                ORDER BY id, {dt_col};""",
+            "query2":"""CREATE TABLE __common_stocks2 AS 
+                        SELECT *,LAG(me) OVER(PARTITION BY id ORDER BY date) AS me_lag1,
+                            LAG(dolvol) OVER(PARTITION BY id ORDER BY date) AS dolvol_lag1
+                        FROM __common_stocks1
+                        ORDER BY id,date
+                        """,
+            "query3":"""CREATE TABLE __common_stocks3 AS
+				        SELECT a.*,b.ret_exc_0_1,b.ret_exc_99_9,b.ret_0_1,b.ret_99_9,b.ret_local_0_1,b.ret_local_99_9
+				        FROM __common_stocks2 AS a
+        				LEFT JOIN {wins_data} AS b
+				        ON a.eom=b.eom;""",
+            "query4":"""CREATE TABLE __common_stocks3 AS
+				        SELECT a.*,b.ret_exc_0_1,b.ret_exc_99_9,b.ret_0_1,b.ret_99_9,b.ret_local_0_1,b.ret_local_99_9
+				        FROM __common_stocks2 AS a
+				        LEFT JOIN {wins_data} AS b
+				        ON STRFTIME('%Y-%m',a.date)=STRFTIME('%Y-%m',b.date);""",
+            "query5":"""UPDATE __common_stocks3
+			            SET ret = 
+			            CASE 
+			                WHEN ret>ret_99_9 AND source_crsp=0 AND ret IS NOT NULL THEN ret_99_9
+			                WHEN reg<ret_0_1 AND source_crsp=0 AND ret IS NOT NULL THEN ret_0_1
+			                ELSE ret
+			            END;""",
+			"query6":"""UPDATE __common_stocks3
+			            SET ret_local=
+			            CASE
+			                WHEN ret_local>ret_local_99_9 AND source_crsp=0 AND ret_local IS NOT NULL THEN ret_local_99_9
+			                WHEN ret_local<ret_local_0_1 and source_crsp=0 AND ret_local IS NOT NULL THEN ret_local_0_1
+			                ELSE ret_local
+			            END;""",
+			"query7":"""UPDATE __common_stocks3
+			            SET ret_exc=ret_exc_99_9
+			            CASE
+			                WHEN ret_exc>ret_exc_99_9 AND source_crsp=0 AND ret_exc IS NOT NULL THEN ret_exc_99_9
+			                WHEN ret_exc<ret_exc_0_1 AND source_crsp=0 AND ret_exc IS NOT NULL THEN ret_exc_0_1
+			                ELSE ret_exc
+			            END;""",
+            "query8_1":"""ALTER TABLE __common_stocks3 DROP COLUMN ret_exc_0_1;""",
+            "query8_2": """ALTER TABLE __common_stocks3 DROP COLUMN ret_exc_99_9;""",
+            "query8_3": """ALTER TABLE __common_stocks3 DROP COLUMN ret_0_1;""",
+            "query8_4": """ALTER TABLE __common_stocks3 DROP COLUMN ret_99_9;""",
+            "query8_5": """ALTER TABLE __common_stocks3 DROP COLUMN ret_local_0_1;""",
+            "query8_6": """ALTER TABLE __common_stocks3 DROP COLUMN ret_local_99_9;""",
+            "query9":"""CREATE TABLE mkt1 AS
+		                SELECT excntry,{dt_col},COUNT(*) AS stocks,SUM(me_lag1) AS me_lag1,
+			                SUM(dolvol_lag1) AS dolvol_lag1,SUM(ret_local*me_lag1)/SUM(me_lag1) AS mkt_vw_lcl,
+			                AVG(ret_local) AS mkt_ew_lcl,SUM(ret*me_lag1)/SUM(me_lag1) AS mkt_vw,AVG(ret) AS mkt_ew,
+			                SUM(ret_exc*me_lag1)/SUM(me_lag1) AS mkt_vw_exc,AVG(ret_exc) as mkt_ew_exc
+		                FROM __common_stocks3
+		                WHERE obs_main=1 AND exch_main=1 AND primary_sec=1 AND common=1 AND ret_lag_dif<={max_date_lag} AND me_lag1 IS NOT NULL AND ret_local IS NOT NULL
+		                GROUP BY excntry, {dt_col};""",
+            "query10":"""CREATE TABLE {out} AS
+			             SELECT *
+			             FROM mkt1
+			             GROUP BY excntry,STRFTIME('%Y-%m',date)
+			             HAVING stocks/MAX(stocks)>=0.25;""",
+            "query11_1":"DROP TABLE IF EXISTS __common_stocks1;",
+            "query11_1":"DROP TABLE IF EXISTS __common_stocks2;",
+            "query11_1":"DROP TABLE IF EXISTS __common_stocks3;",
+            "query11_1":"DROP TABLE IF EXISTS mkt1;",
+        },
+        "combine_crsp_comp_sf":{
+            "query1":"""CREATE TABLE __msf_world2 AS 
+                        SELECT *, LAG(ret_exc) AS ret_exc_lead1m,LAG(id) AS id_lead1m,LAG(reg_lag_dif) AS reg_lag_dif_lead1m 
+                        FROM __msf_world1
+                        ORDER BY id eom DESC;""",
+            "query2":"""UPDATE TABLE __msf_world2 
+                        SET ret_exc_lead1m=
+                        CASE 
+                            WHEN id_lead1m!=id AND ret_lag_dif_lead1m!=ret_lag_dif THEN NULL
+                            ELSE ret_exc_lead1m
+                        END;""",
         }
     }
