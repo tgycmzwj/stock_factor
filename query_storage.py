@@ -240,32 +240,71 @@ class query_storage:
                              SELECT MAX(rowid)
                              FROM __comp_msf2
                              GROUP BY gvkey, iid, eom);""",
-            "query15":"""create table __comp_secm1 as
-				select a.gvkey, a.iid, a.datadate, intnx('month', a.datadate,0,'E') as eom format=YYMMDDN8.,
-					a.tpci, a.exchg, a.curcdm as curcdd, a.prccm as prc_local, a.prchm as prc_high, a.prclm as prc_low, a.ajexm as ajexdi,
-					coalesce(a.cshom/1e6, a.csfsm/1e3, a.cshoq, b.csho_fund*b.ajex_fund/a.ajexm) as cshoc, /* Notive again that I impute with shares from accounting statements in case it is missing*/
-					a.dvpsxm, a.cshtrm, a.curcddvm,
-					a.prccm/a.ajexm*a.trfm as ri_local,  /*ri_local = local return index [1]*/
-					c.fx as fx, d.fx as fx_div
-				from comp.secm as a
-				left join __firm_shares2 as b
-					on a.gvkey=b.gvkey and a.datadate=b.ddate
-				left join fx as c
-					on a.curcdm=c.curcdd and a.datadate=c.date
-				left join fx as d
-					on a.curcddvm=d.curcdd and a.datadate=d.date;
-				update __comp_secm1
-				set cshtrm =
-					case
-						when datadate < '01FEB2001'd then cshtrm / 2
-						when datadate <= '31DEC2001'd then cshtrm / 1.8
-						when datadate < '31DEC2003'd then cshtrm / 1.6
-						else cshtrm
-					end
-				where exchg = 14;""",
+            "query15":"""CREATE TABLE __comp_secm1 AS
+                         SELECT a.gvkey,a.iid,a.datadate,DATE(a.datadate,'end of month') AS eom,
+					         a.tpci,a.exchg,a.curcdm AS curcdd,a.prccm AS prc_local,a.prchm AS prc_high,a.prclm AS prc_low,a.ajexm AS ajexdi,
+					         COALESCE(a.cshom/1e6,a.csfsm/1e3,a.cshoq,b.csho_fund*b.ajex_fund/a.ajexm) AS cshoc, 
+					         a.dvpsxm,a.cshtrm,a.curcddvm,a.prccm/a.ajexm*a.trfm AS ri_local, 
+					         c.fx AS fx, d.fx AS fx_div
+				         FROM comp.secm AS a
+				         LEFT JOIN __firm_shares2 AS b
+					     ON a.gvkey=b.gvkey AND a.datadate=b.ddate
+				         LEFT JOIN fx AS c
+					     ON a.curcdm=c.curcdd AND a.datadate=c.date
+				         LEFT JOIN fx AS d
+					     ON a.curcddvm=d.curcdd AND a.datadate=d.date;""",
+			"query16":"""UPDATE __comp_secm1
+				         SET cshtrm =
+					     CASE
+						     WHEN datadate<DATE('2001-02-01') then cshtrm/2
+						     WHEN datadate<=DATE('2001-12-31') then cshtrm/1.8
+						     WHEN datadate<DATE('2003-12-31') then cshtrm/1.6
+						     ELSE cshtrm
+					     END
+				         WHERE exchg = 14;""",
+            "query17":"""UPDATE __comp_secm1
+                         SET fx=
+                         CASE 
+                             WHEN curcdd='USD' then 1
+                             ELSE fx
+                         END;""",
+            "query18":"""UPDATE __comp_secm1
+                         SET fx_div=
+                         CASE 
+                             WHEN curcdd='USD' then 1
+                             ELSE fx_div
+                         END;""",
+            "query19":"""CREATE TABLE __comp_secm2 AS 
+                         SELECT *,prc_local*fx AS prc,prc_high*fx AS prc_high_new,
+                             prc_low*fx AS prc_low_new,prc*cshoc AS me,cshtrm*prc AS dolvol,ri_local*fx AS ri
+                             dvpsxm*fx_div AS div_tot,NULL AS div_cash_new,NULL AS div_spc_new
+                         FROM __comp_secm1;""",
+            "query20_1":"ALTER TABLE __comp_secm2 DROP COLUMN dvpsxm",
+            "query20_2": "ALTER TABLE __comp_secm2 DROP COLUMN fx_div",
+            "query20_3": "ALTER TABLE __comp_secm2 DROP COLUMN curcddvm",
+            "query20_4": "ALTER TABLE __comp_secm2 DROP COLUMN prc_high",
+            "query20_5": "ALTER TABLE __comp_secm2 DROP COLUMN prc_low",
+            "query20_6": "ALTER TABLE __comp_secm2 DROP COLUMN div_cash",
+            "query20_7": "ALTER TABLE __comp_secm2 DROP COLUMN div_spc",
+            "query20_8": "ALTER TABLE __comp_secm2 RENAME COLUMN prc_high_new TO prc_high",
+            "query20_9": "ALTER TABLE __comp_secm2 RENAME COLUMN prc_low_new TO prc_low",
+            "query20_10": "ALTER TABLE __comp_secm2 RENAME COLUMN div_cash_new TO div_cash",
+            "query20_11": "ALTER TABLE __comp_secm2 RENAME COLUMN div_spc_new TO div_spc",
+            "query21":"""CREATE TABLE __comp_msf4 AS
+                         SELECT {common_vars},prcstd,'secd' AS source 
+                         FROM __comp_msf3
+                         UNION
+                         SELECT {common_vars},10 AS prcstd,'secm' AS source 
+                         FROM __comp_secm2;""",
+            "query22":"""CREATE TABLE __comp_msf5 AS
+                         SELECT *
+                         FROM __comp_msf4
+                         GROUP BY gvkey, iid, eom
+                         HAVING COUNT(*)=1 OR (COUNT(*)=2 AND source='secd');""",
             "query70":"""CREATE TABLE __delist2 AS
 			             SELECT a.gvkey, a.iid, a.datadate, b.secstat, b.dlrsni
-			             FROM __delist1 AS a LEFT JOIN __sec_info AS b
+			             FROM __delist1 AS a 
+			             LEFT JOIN __sec_info AS b
 			             ON a.gvkey=b.gvkey AND a.iid=b.iid;""",
 			"query75":"""CREATE TABLE __delist3 AS
 			             SELECT gvkey, iid, datadate AS date_delist,
