@@ -1,5 +1,10 @@
 class query_storage:
     query_bank={
+        "utils":{
+            "delete_table":"DROP TABLE IF EXISTS {table_name};",
+            "delete_column":"ALTER TABLE {table_name} DROP COLUMN {column_name};",
+            "rename_column":"ALTER TABLE {table_name} RENAME COLUMN {column_name_old} TO {column_name_new};"
+        },
         "prepare_crsp_sf":{
             #query1: format
             "query1":"""CREATE TABLE __crsp_sf1 AS 
@@ -148,9 +153,164 @@ class query_storage:
             "query4_4":"ALTER TABLE __firm_shares2 DROP COLUMN n;",
             "query4_5":"ALTER TABLE __firm_shares2 DROP COLUMN row_number;",
             "query4_6":"""DROP TABLE IF EXISTS __temp""",
-            "query4_7": """DROP TABLE IF EXISTS __temp1""",
+            "query4_7":"""DROP TABLE IF EXISTS __temp1""",
             "query4_8":"""DROP TABLE IF EXISTS __temp2""",
-            "query4_9": """DROP TABLE IF EXISTS __temp2""",
+            "query4_9": """DROP TABLE IF EXISTS __temp3""",
+            "query5":"""CREATE TABLE __comp_dsf_na AS
+                        SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
+                            CASE WHEN a.prcstd!=5 THEN a.prchd ELSE NULL END AS prc_high_lcl,  
+			                CASE WHEN a.prcstd!=5 THEN a.prcld ELSE NULL END AS prc_low_lcl,   
+			            cshtrd,COALESCE(a.cshoc/1e6, b.csho_fund*b.ajex_fund/a.ajexdi) AS cshoc, 
+		   	            (a.prccd/a.ajexdi*a.trfd) AS ri_local,a.curcddv,a.div,a.divd,a.divsp 
+		                FROM comp.secd AS a 
+		                LEFT JOIN __firm_shares2 AS b
+		                ON a.gvkey=b.gvkey AND a.datadate=b.ddate;""",
+            "query6":"""UPDATE __comp_dsf_na
+		                SET cshtrd =
+	                        CASE
+				                WHEN datadate<DATE('2001-02-01') THEN cshtrd/2
+				                WHEN datadate<=DATE('2001-12-31') THEN cshtrd/1.8
+				                WHEN datadate<DATE('2003-12-31') THEN cshtrd/1.6
+				                ELSE cshtrd
+			                END
+		                WHERE exchg=14;""",
+            "query7":"""CREATE TABLE __comp_dsf_global AS
+                        SELECT gvkey, iid, datadate, tpci, exchg, prcstd, curcdd,
+			                prccd/qunit AS prc_local, ajexdi, cshoc/1e6 AS cshoc,
+			                CASE WHEN prcstd!=5 THEN prchd/qunit ELSE NULL END AS prc_high_lcl,  
+			                CASE WHEN prcstd!=5 THEN prcld/qunit ELSE NULL END AS prc_low_lcl,  
+			                cshtrd, ((prccd/qunit)/ajexdi*trfd) AS ri_local, curcddv, div, divd, divsp
+		                FROM comp.g_secd;""",
+            "query8":"""CREATE TABLE __comp_dsf1 AS 
+                        SELECT * FROM __comp_dsf_na
+		                UNION
+		                SELECT * FROM __comp_dsf_global;""",
+            "query9":"""CREATE TABLE __comp_dsf2 AS
+		                SELECT a.*, b.fx AS fx, c.fx AS fx_div
+		                FROM __comp_dsf1 AS a
+		                LEFT JOIN fx AS b
+			            ON a.curcdd=b.curcdd AND a.datadate=b.date
+		                LEFT JOIN fx AS c
+			            ON a.curcddv=c.curcdd AND a.datadate=c.date;""",
+            "query10":"""CREATE TABLE __comp_dsf3 AS 
+                         SELECT a.*, prc_local*fx AS prc, prc_high_lcl*fx AS prc_high, prc_low_lcl*fx AS prc_low,
+                             prc_local*cshoc AS me, cshtrd*prc_local*fx AS dolvol, ri_local*fx AS ri,
+                             COALESCE(div,0)*fx_div AS div_tot, COALESCE(divd,0)*fx_div AS div_cash,
+                             COALESCE(divsp,0)*fx_div AS div_spc
+                         FROM __comp_dsf2""",
+            "query10_1":"ALTER TABLE __comp_dsf3 DROP COLUMN div;",
+            "query10_2": "ALTER TABLE __comp_dsf3 DROP COLUMN divd;",
+            "query10_3": "ALTER TABLE __comp_dsf3 DROP COLUMN divsp;",
+            "query10_4": "ALTER TABLE __comp_dsf3 DROP COLUMN fx_div;",
+            "query10_5": "ALTER TABLE __comp_dsf3 DROP COLUMN curcddv;",
+            "query10_6": "ALTER TABLE __comp_dsf3 DROP COLUMN prc_high_lcl;",
+            "query10_7": "ALTER TABLE __comp_dsf3 DROP COLUMN prc_low_lcl;",
+            "query11":"""CREATE TABLE __comp_msf1 AS 
+                         SELECT *, date(datadate,'end of month') AS eom, 
+                             max(max(prc_high/ajexdi),max(prc/ajexdi))*ajexdi AS prc_highm, 
+                             min(min(prc_low/ajexdi),min(prc/ajexdi))*ajexdi AS prc_lowm,
+                             sum(div_tot/ajexdi)*ajexdi AS div_totm, 
+                             sum(div_cash/ajexdi)*ajexdi AS div_cashm, 
+                             sum(div_spc/ajexdi)*ajexdi AS div_spcm,
+                             sum(cshtrd/ajexdi)*ajexdi AS cshtrm, 
+                             sum(dolvol) AS dolvolm
+                         FROM __comp_dsf3;""",
+            "query12":"""CREATE TABLE __comp_msf2 AS 
+                         SELECT * 
+                         FROM __comp_msf1
+                         WHERE prc_local IS NOT NULL AND curcdd IS NOT NULL AND prcstd IN (3, 4, 10)
+                         ORDER BY gvkey, iid, eom, datadate;""",
+            "query13_1":"ALTER TABLE __comp_msf2 DROP COLUMN cshtrd;",
+            "query13_2":"ALTER TABLE __comp_msf2 DROP COLUMN div_tot;",
+            "query13_3":"ALTER TABLE __comp_msf2 DROP COLUMN div_cash;",
+            "query13_4":"ALTER TABLE __comp_msf2 DROP COLUMN div_spc;",
+            "query13_5":"ALTER TABLE __comp_msf2 DROP COLUMN dolvol;",
+            "query13_6":"ALTER TABLE __comp_msf2 DROP COLUMN prc_high;",
+            "query13_7":"ALTER TABLE __comp_msf2 DROP COLUMN prc_low;",
+            "query13_8":"ALTER TABLE __comp_msf2 RENAME COLUMN div_totm TO div_tot",
+            "query13_9": "ALTER TABLE __comp_msf2 RENAME COLUMN div_cashm TO div_cash",
+            "query13_10": "ALTER TABLE __comp_msf2 RENAME COLUMN div_spcm TO div_spc",
+            "query13_11": "ALTER TABLE __comp_msf2 RENAME COLUMN dolvolm TO dolvol",
+            "query13_12": "ALTER TABLE __comp_msf2 RENAME COLUMN prc_highm TO prc_high",
+            "query13_13": "ALTER TABLE __comp_msf2 RENAME COLUMN prc_lowm TO prc_low",
+            "query14":"""CREATE TABLE __comp_msf3 AS 
+                         SELECT * 
+                         FROM __comp_msf2
+                         WHERE rowid IN (
+                             SELECT MAX(rowid)
+                             FROM __comp_msf2
+                             GROUP BY gvkey, iid, eom);""",
+            "query15":"""create table __comp_secm1 as
+				select a.gvkey, a.iid, a.datadate, intnx('month', a.datadate,0,'E') as eom format=YYMMDDN8.,
+					a.tpci, a.exchg, a.curcdm as curcdd, a.prccm as prc_local, a.prchm as prc_high, a.prclm as prc_low, a.ajexm as ajexdi,
+					coalesce(a.cshom/1e6, a.csfsm/1e3, a.cshoq, b.csho_fund*b.ajex_fund/a.ajexm) as cshoc, /* Notive again that I impute with shares from accounting statements in case it is missing*/
+					a.dvpsxm, a.cshtrm, a.curcddvm,
+					a.prccm/a.ajexm*a.trfm as ri_local,  /*ri_local = local return index [1]*/
+					c.fx as fx, d.fx as fx_div
+				from comp.secm as a
+				left join __firm_shares2 as b
+					on a.gvkey=b.gvkey and a.datadate=b.ddate
+				left join fx as c
+					on a.curcdm=c.curcdd and a.datadate=c.date
+				left join fx as d
+					on a.curcddvm=d.curcdd and a.datadate=d.date;
+				update __comp_secm1
+				set cshtrm =
+					case
+						when datadate < '01FEB2001'd then cshtrm / 2
+						when datadate <= '31DEC2001'd then cshtrm / 1.8
+						when datadate < '31DEC2003'd then cshtrm / 1.6
+						else cshtrm
+					end
+				where exchg = 14;""",
+            "query70":"""CREATE TABLE __delist2 AS
+			             SELECT a.gvkey, a.iid, a.datadate, b.secstat, b.dlrsni
+			             FROM __delist1 AS a LEFT JOIN __sec_info AS b
+			             ON a.gvkey=b.gvkey AND a.iid=b.iid;""",
+			"query75":"""CREATE TABLE __delist3 AS
+			             SELECT gvkey, iid, datadate AS date_delist,
+				         CASE WHEN dlrsni in ('02', '03') THEN -0.3 ELSE 0 END AS dlret
+			             FROM __delist2
+			             WHERE secstat='I';""",
+            "query80":"""CREATE TABLE __comp_sf2 AS
+			             SELECT a.*, b.ret, b.ret_local, b.ret_lag_dif, c.date_delist, c.dlret
+			             FROM {base} AS a
+			             LEFT JOIN __returns AS b
+				         ON a.gvkey=b.gvkey AND a.iid=b.iid AND a.datadate=b.datadate
+			             LEFT JOIN __delist3 AS c
+				         ON a.gvkey=c.gvkey AND a.iid=c.iid;""",
+            "query90":"""CREATE TABLE __comp_sf4 AS
+                         SELECT a.*, a.ret-coalesce(b.t30ret, c.rf)/{scale} AS ret_exc 
+			             FROM __comp_sf3 AS a
+			             LEFT JOIN crsp.mcti AS b
+				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',b.caldt)
+			             LEFT JOIN ff.factors_monthly AS c
+				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',c.date);""",
+            "query100":"""CREATE TABLE __comp_sf5 AS
+                         SELECT a.*, b.excntry, b.exch_main
+                         FROM __comp_sf4 AS a 
+                         LEFT JOIN __exchanges AS b
+                         ON a.exchg=b.exchg;""",
+            "qeury101_1":"DROP TABLE IF EXISTS __firm_shares1",
+            "qeury101_2": "DROP TABLE IF EXISTS __firm_shares2",
+            "qeury101_3": "DROP TABLE IF EXISTS fx",
+            "qeury101_4": "DROP TABLE IF EXISTS __comp_dsf_na",
+            "qeury101_5": "DROP TABLE IF EXISTS __comp_dsf_global",
+            "qeury101_6": "DROP TABLE IF EXISTS __comp_dsf1",
+            "qeury101_7": "DROP TABLE IF EXISTS __comp_dsf2",
+            "qeury101_8": "DROP TABLE IF EXISTS __comp_dsf3",
+            "qeury101_9": "DROP TABLE IF EXISTS __returns",
+            "qeury101_10": "DROP TABLE IF EXISTS __sec_info",
+            "qeury101_11": "DROP TABLE IF EXISTS __delist1",
+            "qeury101_12": "DROP TABLE IF EXISTS __delist2",
+            "qeury101_13": "DROP TABLE IF EXISTS __delist3",
+            "qeury101_14": "DROP TABLE IF EXISTS __comp_sf1",
+            "qeury101_15": "DROP TABLE IF EXISTS __comp_sf2",
+            "qeury101_16": "DROP TABLE IF EXISTS __comp_sf3",
+            "qeury101_17": "DROP TABLE IF EXISTS __comp_sf4",
+            "qeury101_18": "DROP TABLE IF EXISTS __comp_sf5",
+            "qeury101_19": "DROP TABLE IF EXISTS __comp_sf6",
+            "qeury101_20": "DROP TABLE IF EXISTS __exchanges",
         },
 
 
