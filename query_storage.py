@@ -1,10 +1,14 @@
 class query_storage:
     query_bank={
+
         "utils":{
             "delete_table":"DROP TABLE IF EXISTS {table_name};",
             "delete_column":"ALTER TABLE {table_name} DROP COLUMN {column_name};",
             "rename_column":"ALTER TABLE {table_name} RENAME COLUMN {column_name_old} TO {column_name_new};"
         },
+
+
+
         "prepare_crsp_sf":{
             #query1: format
             "query1":"""CREATE TABLE __crsp_sf1 AS 
@@ -412,6 +416,11 @@ class query_storage:
             "query9_5":"""DROP TABLE IF EXISTS __data1;""",
             "query9_6":"""DROP TABLE IF EXISTS __data2;""",
         },
+
+
+
+
+
         "ff_ind_class":{
             "query1":"""CREATE TABLE {out} AS 
                         SELECT *,
@@ -521,6 +530,12 @@ class query_storage:
 					        END AS ff49
 					    FROM {data}""",
         },
+
+
+
+
+
+
         "firms_age":{
             "query1":"""CREATE TABLE crsp_age1 AS
                         SELECT permco, MIN(date) AS crsp_first
@@ -566,6 +581,12 @@ class query_storage:
                          FROM comb3
                          ORDER BY id, eom;"""
         },
+
+
+
+
+
+
         "prepare_daily":{
             "query1":"""CREATE TABLE dsf1 AS 
                        SELECT a.excntry, a.id, a.date, a.eom, a.prc/a.adjfct AS prc_adj, 
@@ -620,6 +641,12 @@ class query_storage:
                          FROM dsf1
                          ORDER BY eno;""",
         },
+
+
+
+
+
+
         "combine_crsp_comp_sf":{
             "query1":"""CREATE TABLE __msf_world1 AS
                         SELECT permno AS id, PERMNO AS permno, PERMCO AS permco, GVKEY AS gvkey, iid, 
@@ -648,6 +675,12 @@ class query_storage:
                         div_tot, div_cash, div_spc, 0 AS source_crsp 
                         FROM {comp_msf};"""
         },
+
+
+
+
+
+
         "mispricing_factors":{
             "query1":"""CREATE TABLE chars1 AS 
                         SELECT id, eom, excntry, chcsho_12m, eqnpo_12m, oaccruals_at, noa_at, at_gr1, 
@@ -666,6 +699,12 @@ class query_storage:
                         LEFT JOIN __ranks AS b 
                         ON a.id=b.id AND a.eom=b.eom;""",
         },
+
+
+
+
+
+
         "add_helper_vars":{
             "query1":"""CREATE TABLE __comp_dates1 AS
                         SELECT gvkey, curcd, MIN(datadate) AS start_date, MAX(datadate) AS end_date
@@ -779,6 +818,12 @@ class query_storage:
             "query8_3":"""DROP TABLE IF EXISTS __helpers1;""",
             "query8_4":"""DROP TABLE IF EXISTS __helpers2;""",
         },
+
+
+
+
+
+
         "crsp_industry":{
             "query1":"""CREATE TABLE permno0 AS
                         SELECT DISTINCT permno,permco,namedt,nameendt,siccd AS sic,cast(naics AS INTEGER) AS naics
@@ -818,9 +863,113 @@ class query_storage:
             "query8_3": """DROP TABLE IF EXISTS permno3;""",
             "query8_4": """DROP TABLE IF EXISTS permno4;""",
         },
+
+
+
+
+
         "create_acc_chars":{
-            ""
+            "query1":"""CREATE TABLE __chars3 AS 
+                        SELECT * 
+                        FROM {data}
+                        ORDER BY gvkey,curcd,datadate;""",
+            "query2":"""CREATE TABLE __chars4 AS
+                        SELECT *, ROW_NUMBER() OVER (
+                            PARTITION BY gvkey,curcd
+                            ORDER BY gvkey,curcd
+                        ) AS count
+                        FROM __chars3;""",
+            "query3":"""CREATE TABLE __chars5 AS
+                        SELECT at_x AS assets,
+                               sale_x AS sales,
+                               be_x AS book_equity,
+                               ni_x AS net_income,
+                               
+                               capx/at_x AS capx_at,
+                               xrd/at_x AS rd_at,
+                               
+                               spi/at_x AS spi_at,
+                               xido_x/at_x AS xido_at,
+                               (spi+xido_x)/at_x AS nri_at,
+                               
+                               gp_x/sale_x AS gp_sale,
+                               ebitda_x/sale_x AS ebitda_sale,
+                               ebit_x/sale_x AS ebit_sale,
+                               pi_x/sale_x AS pi_sale,
+                               ni_x/sale_x AS ni_sale,
+                               ni/sale_x AS nix_sale,
+                               ocf_x/sale_x AS ocf_sale,
+                               fcf_x/sale_x AS fcf_sale,
+                               		
+                               gp_x/at_x AS gp_at,
+                               ebitda_x/at_x AS ebitda_at,
+                               ebit_x/at_x AS ebit_at,
+                               fi_x/at_x AS fi_at,
+                               cop_x/at_x AS cop_at,
+                               ni_x/at_x AS ni_at,
+
+		                       ope_x/be_x AS ope_be,												
+		                       ni_x/be_x AS ni_be,						
+		                       nix_x/be_x AS nix_be,
+		                       ocf_x/be_x AS ocf_be,
+		                       fcf_x/be_x AS fcf_be,
+		                       
+		                       gp_x/bev_x AS gp_bev,
+		                       ebitda_x/bev_x AS ebitda_bev,
+		                       ebit_x/bev_x AS ebit_bev,				
+		                       fi_x/bev_x AS fit_bev,					
+		                       cop_x/bev_x AS cop_bev,			
+		                       
+		                       gp_x/ppent AS gp_ppen,
+		                       ebitda_x/ppent AS ebitda_ppen,
+		                       fcf_x/ppent AS fcf_ppen,
+		                       
+		                       fincf_x/at_x AS fincf_at,
+		                       netis_x/at_x AS netis_at,
+		                       eqnetis_x/at_x AS eqnetis_at,
+		                       eqis_x/at_x AS eqis_at,
+		                       dbnetis_x/at_x AS dbnetis_at,
+		                       dltnetis_x/at_x AS dltnetis_at,
+		                       dstnetis_x/at_x AS dstnetis_at,
+		                       
+		                       eqnpo_x/at_x AS eqnpo_at,
+		                       eqbb_x/at_x AS eqbb_at,
+		                       div_x/at_x AS div_at,
+		                       
+		                       be_x/bev_x AS be_bev,
+		                       debt_x/bev_x AS debt_bev,
+		                       che/bev_x AS cash_bev,
+		                       pstk_x/bev_x AS pstk_bev,
+		                       dltt/bev_x AS debtlt_bev,
+		                       dlc/bev_x AS debtst_bev,
+		                       
+		                       xint/debt_x AS int_debt,
+		                       xint/dltt AS int_debtlt,
+		                       ebitda_x/debt_x AS ebitda_debt,
+		                       ebitda_x/cl_x AS profit_cl,
+		                       ocf_x/cl_x AS ocf_cl,
+		                       ocf_x/debt_x AS ocf_debt,
+		                       che/lt AS cash_lt,
+		                       invt/act AS inv_act,
+		                       rect/act AS rec_act,
+		                       dlc/debt_x AS debtst_debt,
+		                       cl_x/lt AS cl_lt,
+		                       dltt/debt_x AS debtlt_debt,
+		                       lt/ppent AS lt_ppen,
+		                       dltt/be_x AS debtlt_be,
+		                       opex_x/at_x AS opex_at,
+		                       nwc_x/at_x AS nwc_at,
+		                       
+		                       debt_x/at_x AS debt_at,
+		                       debt_x/be_x AS debt_be,
+		                       ebit_x/xint AS ebit_int
+                        FROM __chars4;""",
         },
+
+
+
+
+
         "comp_exchanges":{
             "query1":"""CREATE TABLE __ex_country1 AS
                         SELECT DISTINCT exchg,excntry FROM comp.g_security
@@ -847,6 +996,12 @@ class query_storage:
             "query5_2":"""DROP TABLE IF EXISTS __ex_country2;""",
             "query5_3":"""DROP TABLE IF EXISTS __ex_country3;""",
         },
+
+
+
+
+
+
         "market_returns":{
             "query1":"""CREATE TABLE __common_stocks1 AS
 		                SELECT DISTINCT source_crsp, id, date, eom, excntry, obs_main, exch_main, primary_sec, common, ret_lag_dif, me, dolvol, ret, ret_local, ret_exc
@@ -913,6 +1068,12 @@ class query_storage:
             "query11_1":"DROP TABLE IF EXISTS __common_stocks3;",
             "query11_1":"DROP TABLE IF EXISTS mkt1;",
         },
+
+
+
+
+
+
         "combine_crsp_comp_sf":{
             "query1":"""CREATE TABLE __msf_world2 AS 
                         SELECT *, LAG(ret_exc) AS ret_exc_lead1m,LAG(id) AS id_lead1m,LAG(reg_lag_dif) AS reg_lag_dif_lead1m 
@@ -973,5 +1134,68 @@ class query_storage:
             "query8_4": "DROP TABLE IF EXISTS __dsf_world1;",
             "query8_5": "DROP TABLE IF EXISTS __dsf_world2;",
             "query8_6": "DROP TABLE IF EXISTS __obs_main;",
+        },
+
+
+
+
+        "standardized_accounting_data":{
+            "query1":"""SELECT DISTINCT LOWER(name) AS qvars_q
+                        FROM pragma_table_info('COMP.FUNDQ') 
+                        WHERE LOWER(name) LIKE '%q'
+                        UNION 
+                        SELECT DISTINCT LOWER(name) AS qvars_q
+                        FROM pragma_table_info('COMP.G_FUNDQ') 
+                        WHERE LOWER(name) LIKE '%q';""",
+            "query2":"""SELECT DISTINCT LOWER(name) AS qvars_q
+                        FROM pragma_table_info('COMP.FUNDQ') 
+                        WHERE LOWER(name) LIKE '%y'
+                        UNION 
+                        SELECT DISTINCT LOWER(name) AS qvars_q
+                        FROM pragma_table_info('COMP.G_FUNDQ') 
+                        WHERE LOWER(name) LIKE '%y';""",
+            "query3":"""CREATE TABLE g_funda1 AS 
+                        SELECT gvkey,datadate,indfmt,curcd,{keep_list},'GLOBAL' AS source,
+                            ib+COALESCE(xi,0)+COALESCE(do,0) AS ni,
+                            NULL AS gp,NULL AS pstkrv,NULL AS pstkl,NULL AS itcb,NULL AS xad,NULL AS txbcof
+                        FROM comp_g_funda
+                        WHERE {compcond} AND datadate>={start_date}""",
+            "query4":"""CREATE TABLE {aname} AS
+			            SELECT *
+			            FROM g_funda1
+			            GROUP BY gvkey, datadate
+			            HAVING COUNT(*)=1 or (COUNT(*)=2 AND indfmt='INDL');""",
+			"query5":"""ALTER TABLE {aname} DROP COLUMN indfmt;""",
+            "query6":"""CREATE TABLE g_fundq1 AS 
+                        SELECT *,'GLOBAL' AS source, ibq+COALESCE(xiq,0) AS niq,
+                            ppentq+dpactq AS ppegtq,NULL AS icaptq,NULL AS niy,NULL AS txditcq,
+                            NULL AS txpq,NULL AS xidoq,NULL AS xidoy,NULL AS xrdq,NULL AS xrdy,
+                            NULL AS txbcofy
+                        FROM comp.g_fundq 
+                        WHERE {compcond} AND datadate>={start_date};""",
+            "query7":"""CREATE TABLE {qname} AS
+			            SELECT *
+			            FROM g_fundq1
+			            GROUP BY gvkey, datadate
+			            HAVING COUNT(*)=1 or (COUNT(*)=2 AND indfmt='INDL');""",
+			"query8":"""ALTER TABLE {qname} DROP indfmt;""",
+            "query9":"""CREATE TABLE {aname} AS 
+                        SELECT gvkey,datadate,curcd,{keep_list},'NA' AS source
+                        FROM comp_funda
+                        WHERE {compconda} AND datadate>={start_date};""",
+            "query10":"""CREATE TABLE {aname} AS 
+                         SELECT gvkey,datadate,fyr,fyearq,fqtr,curcdq,{keep_list},'NA' AS source
+                         FROM comp_funda
+                         WHERE {compconda} AND datadate>={start_date};""",
+            "query11":"""CREATE TABLE __tempa AS
+                         SELECT a.*, b.fx
+			             FROM {aname} AS a 
+			             LEFT JOIN fx AS b
+			             ON a.datadate=b.date AND a.curcd=b.curcdd;""",
+			"query12":"""CREATE TABLE __tempq AS 
+			             SELECT a.*, b.fx
+			             FROM {qname} AS a 
+			             LEFT JOIN fx AS b
+			             ON a.datadate=b.date AND a.curcdq=b.curcdd;"""
         }
     }

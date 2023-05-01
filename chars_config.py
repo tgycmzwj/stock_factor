@@ -349,4 +349,45 @@ avars_bs=["at","act","aco","che","invt","rect","ivao","ivst","ppent","ppegt","in
           "lco","lo","seq","ceq","pstkrv","pstkl","pstk","mib","icapt"]
 avars_other=["emp"]
 avars=avars_inc+avars_cf+avars_cf+avars_other
+
+yrl_vars=["cogsq","xsgaq","xintq","dpq","txtq","xrdq","dvq","spiq","saleq","revtq","cogsq",
+		  "xoprq","oibdpq","oiadpq","ibq","niq","xidoq","nopiq","miiq","piq","xiq","xidocq",
+          "capxq","oancfq","ibcq","dpcq","wcaptq","prstkcq","sstkq","purtshrq","dsq","dltrq",
+          "ltdchq","dlcchq","fincfq","fiaoq","txbcofq","dvtq"]
+bs_vars=["seqq","ceqq","pstkq","icaptq","mibq","gdwlq","req","atq","actq","invtq","rectq",
+         "ppegtq","ppentq","aoq","acoq","intanq","cheq","ivaoq","ivstq","ltq","lctq","dlttq",
+         "dlcq","txpq","apq","lcoq","loq","txditcq","txdbq"]
+compcond="indfmt in ('INDL', 'FS') and datafmt='HIST_STD' and popsrc='I' and consol='C'"
+growth_vars=[
+            #Assets - Aggregated
+			"at_x","ca_x","nca_x",
+            #Liabilities - Aggregated
+			"lt","cl_x","ncl_x",
+            #Financing Book Values
+			"be_x","pstk_x","debt_x",
+            #Sales and Operating Costs
+			"sale_x","cogs","xsga","opex_x",
+			"capx invt"]
+ch_asset_vars=[
+            #Assets Individual Items
+			"che","invt","rect","ppegt","ivao","ivst","intan",
+            #Liabilities Individual Items
+			"dlc","ap","txp","dltt","txditc",
+            #Operating Assets/Liabilities
+			"coa_x","col_x","cowc_x","ncoa_x","ncol_x","nncoa_x",
+            #Operating Assets/Liabilities
+			"oa_x","ol_x",
+            #Financial Assets/Liabilities
+			"fna_x","fnl_x","nfna_x",
+            #Income Statement
+			"gp_x","ebitda_x","ebit_x","ope_x","ni_x","nix_x","dp",
+            #Aggreagted Cash Flow
+			"fincf_x","ocf_x","fcf_x","nwc_x",
+            #Financing Cash Flow
+			"eqnetis_x","dltnetis_x","dstnetis_x","dbnetis_x","netis_x","eqnpo_x",
+            #Tax Change
+			"txt",
+            #Financing Cash Flow
+			"eqbb_x","eqis_x","div_x","eqpo_x",
+			"capx be_x"]
 special_exchanges=(0,1,2,3,4,15, 16,17,18,21,13,19,20,127,150,157,229,263,269,281,283,290,320,326,341,342,347,348,349,352)
