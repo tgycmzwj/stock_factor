@@ -305,6 +305,7 @@ class query_storage:
                          FROM __comp_msf4
                          GROUP BY gvkey, iid, eom
                          HAVING COUNT(*)=1 OR (COUNT(*)=2 AND source='secd');""",
+
             "query70":"""CREATE TABLE __delist2 AS
 			             SELECT a.gvkey, a.iid, a.datadate, b.secstat, b.dlrsni
 			             FROM __delist1 AS a 
@@ -322,6 +323,9 @@ class query_storage:
 				         ON a.gvkey=b.gvkey AND a.iid=b.iid AND a.datadate=b.datadate
 			             LEFT JOIN __delist3 AS c
 				         ON a.gvkey=c.gvkey AND a.iid=c.iid;""",
+            "query85":"""CREATE TABLE __comp_sf3 AS 
+                         """,
+
             "query90":"""CREATE TABLE __comp_sf4 AS
                          SELECT a.*, a.ret-coalesce(b.t30ret, c.rf)/{scale} AS ret_exc 
 			             FROM __comp_sf3 AS a
@@ -1197,5 +1201,13 @@ class query_storage:
 			             FROM {qname} AS a 
 			             LEFT JOIN fx AS b
 			             ON a.datadate=b.date AND a.curcdq=b.curcdd;"""
+        },
+        "clean_comp_msf":{
+            "query1":"""UPDATE {data}
+		                SET ret=NULL, ret_local=NULL, ret_exc=NULL
+		                WHERE gvkey='002137' AND iid='01C' AND eom IN ('31DEC1983'd, '31JAN1984'd);""",
+		    "query2":"""update {data}
+		                SET ret=NULL, ret_local=NULL, ret_exc=NULL
+		                WHERE gvkey='013633' AND iid='01W' and eom IN ('28FEB1995'd);"""
         }
     }
