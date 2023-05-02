@@ -1,4 +1,5 @@
 import time
+import utils
 
 def prepare_crsp_sf(conn,cursor,queries,freq="m"):
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())

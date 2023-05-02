@@ -20,7 +20,7 @@ class macro_config:
                 "comp.exrt_dly",
                 "comp.r_ex_codes",
                 "ff.factors_monthly",
-                #"comp.g_secd"
+                "comp.g_secd"
                 ]
     db="/kellogg/proj/wzi1638/stock_factor/my_data.db"
     wrds_username="wzi1638"

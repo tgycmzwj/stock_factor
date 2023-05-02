@@ -1,5 +1,5 @@
 import time
-
+import utils
 
 
 def prepare_comp_sf(conn,cursor,queries,freq="m"):
