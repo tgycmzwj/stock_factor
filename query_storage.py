@@ -4,14 +4,28 @@ class query_storage:
         "utils":{
             "delete_table":"DROP TABLE IF EXISTS {table_name};",
             "delete_column":"ALTER TABLE {table_name} DROP COLUMN {column_name};",
+            "rename_table":"ALTER TABLE {table_name_old} RENAME TO {table_name_new}",
             "rename_column":"ALTER TABLE {table_name} RENAME COLUMN {column_name_old} TO {column_name_new};",
             "return_column":"SELECT {column_name} FROM {table_name};",
+            "sort_table":"""CREATE TABLE {table_name}_sorted AS 
+                            SELECT *
+                            FROM {table_name}
+                            ORDER BY {sortvar};""",
+            "sort_and_remove_duplicates":"""CREATE TABLE {table_in}_sorted AS 
+                                            SELECT * FROM (
+                                                SELECT *, ROW_NUMBER() OVER (
+                                                PARTITION BY {idvars} 
+                                                ORDER BY {sortvar}) 
+                                                AS row_number    
+                                                FROM {table_in}) 
+                                            AS rows WHERE row_number=1;
+            """
         },
 
 
 
         "prepare_crsp_sf":{
-            #query1: format
+            #query1:
             "query1":"""CREATE TABLE __crsp_sf1 AS 
                         SELECT a.permno, a.permco, a.date, (a.prc < 0) AS bidask, abs(a.prc) AS prc, a.shrout/1000 AS shrout, abs(a.prc)*a.shrout/1000 AS me,
 	                    a.ret, a.retx, a.cfacshr, a.vol, 
@@ -35,9 +49,6 @@ class query_storage:
 				            ELSE vol
 			            END
 		                WHERE exchcd = 3;""",
-            #query3: sort table by permno,date
-            "query3":"""CREATE TABLE __crsp_sf1_sorted AS 
-                        SELECT * FROM __crsp_sf1 ORDER BY permno,date;""",
             #query4:
             "query4":"""CREATE TABLE __crsp_sf2 AS
                         SELECT *, ABS(prc) * vol AS dolvol,
@@ -45,7 +56,7 @@ class query_storage:
                             WHEN ROW_NUMBER() OVER (PARTITION BY permno ORDER BY date) = 1 THEN NULL
                             ELSE (ret - retx) * LAG(prc) OVER (PARTITION BY permno ORDER BY date) * (cfacshr / LAG(cfacshr) OVER (PARTITION BY permno ORDER BY date))
                         END AS div_tot
-                        FROM __crsp_sf1_sorted;""",
+                        FROM __crsp_sf1;""",
             #query5: format
             "query5_d":"""CREATE TABLE __crsp_sf3 AS 
                           SELECT a.*, b.dlret, b.dlstcd
@@ -71,14 +82,9 @@ class query_storage:
                           SELECT *,
                           CASE 
                               WHEN ret IS NULL AND dlret_new IS NOT NULL THEN 0
-                               ELSE (1+ret)*(1+COALESCE(dlret_new,0))-1
+                              ELSE (1+ret)*(1+COALESCE(dlret_new,0))-1
                           END AS ret_new
                           FROM __crsp_sf4_temp;""",
-            "query6_1":"""ALTER TABLE __crsp_sf4 DROP COLUMN ret;""",
-            "query6_2":"""ALTER TABLE __crsp_sf4 DROP COLUMN dlret;""",
-            "query6_3":"""ALTER TABLE __crsp_sf4 DROP COLUMN dlstcd;""",
-            "query6_4":"""ALTER TABLE __crsp_sf4 RENAME COLUMN dlret_new TO dlret;""",
-            "query6_5":"""ALTER TABLE __crsp_sf4 RENAME COLUMN ret_new TO ret;""",
             "query7":"""CREATE TABLE __crsp_sf5 AS
                         SELECT a.*,a.ret-coalesce(b.t30ret,c.rf)/{scale} AS ret_exc
                         FROM __crsp_sf4 AS a
@@ -98,15 +104,6 @@ class query_storage:
                          SELECT DISTINCT *
                          FROM __crsp_sf6
                          ORDER BY permno, date;""",
-            #query11
-            "query11_1":"DROP TABLE IF EXISTS __crsp_sf1",
-            "query11_2":"DROP TABLE IF EXISTS __crsp_sf1_sorted",
-            "query11_3":"DROP TABLE IF EXISTS __crsp_sf2",
-            "query11_4":"DROP TABLE IF EXISTS __crsp_sf3",
-            "query11_5":"DROP TABLE IF EXISTS __crsp_sf4",
-            "query11_6":"DROP TABLE IF EXISTS __crsp_sf4_temp",
-            "query11_7":"DROP TABLE IF EXISTS __crsp_sf5",
-            "query11_8":"DROP TABLE IF EXISTS __crsp_sf6",
         },
 
 
@@ -123,15 +120,15 @@ class query_storage:
                         FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
-            "query2":"""CREATE TABLE __temp AS 
-                        SELECT * FROM (
-                        SELECT *, ROW_NUMBER() OVER (
-                            PARTITION BY gvkey,datadate
-                            ORDER BY gvkey,datadate DESC) 
-                            AS row_number    
-                        FROM __firm_shares1) 
-                        AS rows WHERE row_number = 1;""",
-            "query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
+            # "query2":"""CREATE TABLE __temp AS
+            #             SELECT * FROM (
+            #             SELECT *, ROW_NUMBER() OVER (
+            #                 PARTITION BY gvkey,datadate
+            #                 ORDER BY gvkey,datadate DESC)
+            #                 AS row_number
+            #             FROM __firm_shares1)
+            #             AS rows WHERE row_number = 1;""",
+            #"query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3_1":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,

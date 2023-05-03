@@ -2,21 +2,22 @@ import time
 import utils
 
 def prepare_crsp_sf(conn,cursor,queries,freq="m"):
+    util_funcs=utils.utils(cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
-    #query1
+
+    #query1: create table __crsp_sf1
     cursor.execute(queries["query1"].format(freq=freq))
     cursor.fetchall()
     print("finished query 1 at time "+time.asctime())
 
-    #query2
+    #query2: adjust volatility [update]
     cursor.execute(queries["query2"])
     cursor.fetchall()
     conn.commit()
     print("finished query 2 at time "+time.asctime())
 
     #query3
-    cursor.execute(queries["query3"])
-    cursor.fetchall()
+    util_funcs.sort_table(table="__crsp_sf1",sortvar=["permno","date"])
     print("finished query 3 at time "+time.asctime())
 
     #query4
@@ -37,11 +38,9 @@ def prepare_crsp_sf(conn,cursor,queries,freq="m"):
     cursor.execute(queries["query6"])
     cursor.fetchall()
     print("finished query 6 at time "+time.asctime())
-    for i in range(6):
-        cursor.execute(queries["query6_"+str(i)])
-        cursor.fetchall()
-        print("finished query6_"+str(i)+" at time "+time.asctime())
-        conn.commit()
+    util_funcs.delete_column([["__crsp_sf4","ret"],["__crsp_sf4","dlret"],["__crsp_sf4","dlstcd"]])
+    util_funcs.rename_table([["__crsp_sf4","dlret_new","dlret"],["__crsp_sf4","ret_new","ret"]])
+
 
     #query7
     if freq=="m":
@@ -71,9 +70,6 @@ def prepare_crsp_sf(conn,cursor,queries,freq="m"):
     print("finished query10 at time "+time.asctime())
 
     #query11
-    for i in range(1,9):
-        cursor.execute(queries["query11_"+str(i)])
-        cursor.fetchall()
-        print("finished query11_"+str(i)+" at time "+time.asctime())
-
+    util_funcs.delete_table(["__crsp_sf1","__crsp_sf1_sorted","__crsp_sf2","__crsp_sf3",
+                             "__crsp_sf4","__crsp_sf4_temp","__crsp_sf5","__crsp_sf6"])
     print("finished")
