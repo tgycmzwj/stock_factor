@@ -14,7 +14,7 @@ class query_storage:
             "sort_and_remove_duplicates":"""CREATE TABLE {table_in}_sorted AS 
                                             SELECT * FROM (
                                                 SELECT *, ROW_NUMBER() OVER (
-                                                PARTITION BY {idvars} 
+                                                PARTITION BY {idvar} 
                                                 ORDER BY {sortvar}) 
                                                 AS row_number    
                                                 FROM {table_in}) 
@@ -120,15 +120,6 @@ class query_storage:
                         FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
-            # "query2":"""CREATE TABLE __temp AS
-            #             SELECT * FROM (
-            #             SELECT *, ROW_NUMBER() OVER (
-            #                 PARTITION BY gvkey,datadate
-            #                 ORDER BY gvkey,datadate DESC)
-            #                 AS row_number
-            #             FROM __firm_shares1)
-            #             AS rows WHERE row_number = 1;""",
-            #"query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3_1":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
