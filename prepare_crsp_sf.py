@@ -2,7 +2,7 @@ import time
 import utils
 
 def prepare_crsp_sf(conn,cursor,queries,freq="m"):
-    util_funcs=utils.utils(cursor)
+    util_funcs=utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
     #query1: create table __crsp_sf1

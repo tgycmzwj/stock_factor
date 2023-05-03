@@ -3,7 +3,7 @@ import utils
 
 
 def prepare_comp_sf(conn,cursor,queries,freq="m"):
-    util_funcs = utils.utils(cursor)
+    util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
     #query1:
