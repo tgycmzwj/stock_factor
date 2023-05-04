@@ -95,7 +95,7 @@ class query_storage:
             "query8":"""CREATE TABLE __crsp_sf6 AS 
                         SELECT *,SUM(me) AS me_company
                         FROM __crsp_sf5
-                       git  GROUP BY permco,date;""",
+                        GROUP BY permco,date;""",
             "query9":"""UPDATE __crsp_sf6
 			            SET vol=vol*100,dolvol=dolvol*100;
 		                """,
@@ -123,7 +123,7 @@ class query_storage:
             "query3_1":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
-                                INTNX_(CASE(datadate AS text),12,'month','end') AS forward_max
+                                INTNX_(CAST(datadate AS text),12,'month','end') AS forward_max
                             FROM __temp;""",
             "query3_2":"""CREATE TABLE __temp2 AS 
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
