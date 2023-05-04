@@ -19,13 +19,13 @@ class query_storage:
                                                 AS row_number    
                                                 FROM {table_in}) 
                                             AS rows WHERE row_number=1;""",
-            "duplicate_on":"""WITH RECURSIVE counter(value) AS (
-   SELECT 1
-     UNION ALL
-   SELECT value + 1 FROM counter LIMIT (SELECT MAX({num}) FROM input)
-)
-SELECT * FROM {table_name} JOIN counter ON value <= {num}"""
-               # """CREATE TABLE __new AS SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) ON value <= {num};"""
+            "duplicate_on":"""CREATE TABLE {table_out} AS
+                              WITH RECURSIVE counter(value) AS (
+                              SELECT 1
+                              UNION ALL
+                              SELECT value + 1 
+                              FROM counter LIMIT (SELECT MAX({num}) FROM {table_in}))
+                              SELECT * FROM {table_in} JOIN counter ON value <= {num}""",
         },
 
 
@@ -136,9 +136,9 @@ SELECT * FROM {table_name} JOIN counter ON value <= {num}"""
                               CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n
                           FROM __temp1;""",
 
-            "query4":"""CREATE TABLE __temp3 AS 
-                          SELECT *,INTNX_(CAST(datadate AS text),n, 'day','end') AS ddate
-                          FROM __temp2;""",
+            # "query4":"""CREATE TABLE __temp3 AS
+            #               SELECT *,INTNX_(CAST(datadate AS text),n, 'day','end') AS ddate
+            #               FROM __temp2;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
                             CASE WHEN a.prcstd!=5 THEN a.prchd ELSE NULL END AS prc_high_lcl,  

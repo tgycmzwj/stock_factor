@@ -67,8 +67,13 @@ class utils(object):
             self.rename_table([[table_in+"_sorted",table_in]])
         else:
             self.rename_table([[table_in+"_sorted",table_out]])
-
         print("finished sorting and removing duplicates for table {}".format(table_in))
+
+    def duplicate_records(self,table_in,table_out,num):
+        query=self.query_bank["duplicate_on"]
+        self.cursor.execute(query.format(table_in=table_in,table_out=table_out,num=num))
+        self.cursor.fetchall()
+        print("finishing duplicating records for table {} based on column {}".format(table_in,num))
 
 if __name__=="__main__":
     obj=utils()
