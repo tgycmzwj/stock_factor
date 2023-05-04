@@ -1,13 +1,14 @@
 import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
+import typing
 
-def intnx_(date,n,delta,alignment):
-    if delta=="month":
+def intnx_(date:str,n:int,delta:str,alignment:str)->str:
+    if delta.lower()=="month":
         date_after=datetime.datetime.strptime(date,"%Y-%m-%d")+relativedelta(months=n)
-    elif delta=="day":
+    elif delta.lower()=="day":
         date_after=datetime.datetime.strptime(date,"%Y-%m-%d")+relativedelta(days=n)
-    if alignment=="end":
+    if alignment.lower()=="end":
         day=calendar.monthrange(date_after.year,date_after.month)[1]
         return datetime.datetime(date_after.year,date_after.month,day).strftime("%Y-%m-%d")
     else:
