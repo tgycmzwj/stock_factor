@@ -15,20 +15,20 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # #query2:
     # util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
     #
-    # #query3
-    # cursor.execute(queries["query3_1"])
-    # cursor.fetchall()
-    # print("finished query 3_1 at time "+time.asctime())
-    #
-    # cursor.execute(queries["query3_2"])
-    # cursor.fetchall()
-    # print("finished query 3_2 at time "+time.asctime())
-    #
-    # cursor.execute(queries["query3_3"])
-    # cursor.fetchall()
-    # print("finished query 3_3 at time "+time.asctime())
-    #
-    # util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
+    #query3
+    cursor.execute(queries["query3_1"])
+    cursor.fetchall()
+    print("finished query 3_1 at time "+time.asctime())
+
+    cursor.execute(queries["query3_2"])
+    cursor.fetchall()
+    print("finished query 3_2 at time "+time.asctime())
+
+    cursor.execute(queries["query3_3"])
+    cursor.fetchall()
+    print("finished query 3_3 at time "+time.asctime())
+
+    util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
 
     #query4
 
