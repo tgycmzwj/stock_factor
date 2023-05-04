@@ -133,12 +133,11 @@ class query_storage:
                             FROM __temp;""",
             "query3":"""CREATE TABLE __temp2 AS 
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
-                              CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n,
-                              NULL AS ddate
+                              CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n
                           FROM __temp1;""",
-            "query4":"""UPDATE TABLE __temp3
-                        SET ddate=
-                        INTNX_(CAST(datadate AS text),value,'day','end');""",
+            "query4":"""CREATE TABLE __temp4 AS
+                        SELECT *, INTNX_(CAST(datadate AS text),value,'day','end') AS ddate
+                        FROM __temp3;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
                             CASE WHEN a.prcstd!=5 THEN a.prchd ELSE NULL END AS prc_high_lcl,  
@@ -576,6 +575,7 @@ class query_storage:
 			            SELECT excntry, id, date, eom, ret_exc
 			            FROM {sf}
 			            WHERE ret_lag_dif<=5 AND not ret_exc IS NOT NULL;""",
+            "query2":""" """,
         },
 
 
