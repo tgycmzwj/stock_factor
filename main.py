@@ -27,7 +27,7 @@ query_bank=query_storage()
 # pull_raw_wrds(config.datasets,db,conn,cursor)
 
 #define additional helper function
-
+prepare_helper_func(conn)
 
 # #process us data from crsp
 # queries=query_bank.query_bank["prepare_crsp_sf"]
