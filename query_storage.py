@@ -120,15 +120,6 @@ class query_storage:
                         FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
-            # "query2":"""CREATE TABLE __temp AS
-            #             SELECT * FROM (
-            #             SELECT *, ROW_NUMBER() OVER (
-            #                 PARTITION BY gvkey,datadate
-            #                 ORDER BY gvkey,datadate DESC)
-            #                 AS row_number
-            #             FROM __firm_shares1)
-            #             AS rows WHERE row_number = 1;""",
-            #"query2_1":"""ALTER TABLE __temp DROP COLUMN row_number;""",
             "query3_1":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
@@ -141,23 +132,6 @@ class query_storage:
             "query3_3":"""CREATE TABLE __temp3 AS 
                           SELECT *,DATE(datadate,'+' || n || ' days','start of month','+1 month','-1 day') AS ddate
                           FROM __temp2;""",
-            "query3_4":"""CREATE TABLE __firm_shares2 AS 
-                        SELECT * FROM (
-                        SELECT *, ROW_NUMBER() OVER (
-                            PARTITION BY gvkey,datadate,ddate
-                            ORDER BY gvkey,datadate,ddate) 
-                            AS row_number    
-                        FROM __temp3) 
-                        AS rows WHERE row_number = 1;""",
-            "query4_1":"""ALTER TABLE __firm_shares2 DROP COLUMN following;""",
-            "query4_2":"""ALTER TABLE __firm_shares2 RENAME COLUMN following_new TO following;""",
-            "query4_3":"ALTER TABLE __firm_shares2 DROP COLUMN forward_max;",
-            "query4_4":"ALTER TABLE __firm_shares2 DROP COLUMN n;",
-            "query4_5":"ALTER TABLE __firm_shares2 DROP COLUMN row_number;",
-            "query4_6":"""DROP TABLE IF EXISTS __temp""",
-            "query4_7":"""DROP TABLE IF EXISTS __temp1""",
-            "query4_8":"""DROP TABLE IF EXISTS __temp2""",
-            "query4_9": """DROP TABLE IF EXISTS __temp3""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
                             CASE WHEN a.prcstd!=5 THEN a.prchd ELSE NULL END AS prc_high_lcl,  
