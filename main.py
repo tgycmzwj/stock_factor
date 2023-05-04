@@ -12,6 +12,7 @@ from pull_raw_wrds import pull_raw_wrds
 from query_storage import query_storage
 from prepare_crsp_sf import prepare_crsp_sf
 from prepare_comp_sf import prepare_comp_sf
+from helper_func import prepare_helper_func
 
 #establish connection to sql
 config=macro_config()
@@ -24,6 +25,9 @@ query_bank=query_storage()
 
 # #download data
 # pull_raw_wrds(config.datasets,db,conn,cursor)
+
+#define additional helper function
+
 
 # #process us data from crsp
 # queries=query_bank.query_bank["prepare_crsp_sf"]
