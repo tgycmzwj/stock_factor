@@ -18,8 +18,9 @@ class query_storage:
                                                 ORDER BY {sortvar}) 
                                                 AS row_number    
                                                 FROM {table_in}) 
-                                            AS rows WHERE row_number=1;
-            """
+                                            AS rows WHERE row_number=1;""",
+            "duplicate_on":"""SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) 
+ON value <= {num};"""
         },
 
 
@@ -129,6 +130,7 @@ class query_storage:
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                               CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n
                           FROM __temp1;""",
+
             "query4":"""CREATE TABLE __temp3 AS 
                           SELECT *,INTNX_(CAST(datadate AS text),n, 'day','end') AS ddate
                           FROM __temp2;""",

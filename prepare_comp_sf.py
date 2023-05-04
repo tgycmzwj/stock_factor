@@ -26,6 +26,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     cursor.execute(queries["query4"])
     cursor.fetchall()
     print("finished query 4 at time "+time.asctime())
+    util_funcs.delete_column([["__query4","row_number"]])
 
     util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
     #query4
