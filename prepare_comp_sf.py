@@ -32,7 +32,8 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
     util_funcs.delete_table(["__temp","__temp1","__temp2","__temp3"])
     util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
-                              ["__firm_shares2","n"],["__firm_shares2","row_number"]])
+                              ["__firm_shares2","n"],["__firm_shares2","row_number"],
+                              ["__firm_shares2","value"]])
     util_funcs.rename_column([["__firm_shares2","following_new","following"]])
 
     #query5
