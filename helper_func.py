@@ -16,6 +16,8 @@ def intnx_(date:str,n:int,delta:str,alignment:str)->str:
             return date_after.strftime("%Y-%m-%d")
     except:
         return "null"
+
+
 def prepare_helper_func(conn):
     conn.create_function("INTNX_",4,intnx_)
     print("finished creating helper functions")

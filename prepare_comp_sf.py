@@ -12,26 +12,24 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # cursor.fetchall()
     # print("finished query 1 at time "+time.asctime())
     #
-    # #query2:
+    #
     # util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
     #
     #query3
-    cursor.execute(queries["query3_1"])
+    cursor.execute(queries["query2"])
     cursor.fetchall()
-    print("finished query 3_1 at time "+time.asctime())
+    print("finished query 2 at time "+time.asctime())
 
-    cursor.execute(queries["query3_2"])
+    cursor.execute(queries["query3"])
     cursor.fetchall()
-    print("finished query 3_2 at time "+time.asctime())
+    print("finished query 3 at time "+time.asctime())
 
-    cursor.execute(queries["query3_3"])
+    cursor.execute(queries["query4"])
     cursor.fetchall()
-    print("finished query 3_3 at time "+time.asctime())
+    print("finished query 4 at time "+time.asctime())
 
     util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
-
     #query4
-
     util_funcs.delete_table(["__temp","__temp1","__temp2","__temp3"])
     util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
                               ["__firm_shares2","n"],["__firm_shares2","row_number"]])

@@ -120,17 +120,17 @@ class query_storage:
                         FROM comp_funda 
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
-            "query3_1":"""CREATE TABLE __temp1 AS 
+            "query2":"""CREATE TABLE __temp1 AS 
                             SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
                                 ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
                                 INTNX_(CAST(datadate AS text),12,'month','end') AS forward_max
                             FROM __temp;""",
-            "query3_2":"""CREATE TABLE __temp2 AS 
+            "query3":"""CREATE TABLE __temp2 AS 
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
                               CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n
                           FROM __temp1;""",
-            "query3_3":"""CREATE TABLE __temp3 AS 
-                          SELECT *,DATE(datadate,'+' || n || ' days','start of month','+1 month','-1 day') AS ddate
+            "query4":"""CREATE TABLE __temp3 AS 
+                          SELECT *,INTNX_(CAST(datadate AS text),n, 'day','end') AS ddate
                           FROM __temp2;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
