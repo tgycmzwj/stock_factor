@@ -19,7 +19,8 @@ class query_storage:
                                                 AS row_number    
                                                 FROM {table_in}) 
                                             AS rows WHERE row_number=1;""",
-            "duplicate_on":"""SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) 
+            "duplicate_on":"""CREATE TABLE __new AS 
+            SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) 
 ON value <= {num};"""
         },
 
