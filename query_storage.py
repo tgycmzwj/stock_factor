@@ -19,9 +19,13 @@ class query_storage:
                                                 AS row_number    
                                                 FROM {table_in}) 
                                             AS rows WHERE row_number=1;""",
-            "duplicate_on":"""CREATE TABLE __new AS 
-            SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) 
-ON value <= {num};"""
+            "duplicate_on":"""WITH RECURSIVE counter(value) AS (
+   SELECT 1
+     UNION ALL
+   SELECT value + 1 FROM counter LIMIT (SELECT MAX({num}) FROM input)
+)
+SELECT * FROM {table_name} JOIN counter ON value <= {num}"""
+               # """CREATE TABLE __new AS SELECT * FROM {table_name} JOIN generate_series(1, (SELECT MAX({num}) FROM {table_name})) ON value <= {num};"""
         },
 
 
