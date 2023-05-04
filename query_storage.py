@@ -14,7 +14,7 @@ class query_storage:
             "sort_and_remove_duplicates":"""CREATE TABLE {table_in}_sorted AS 
                                             SELECT * FROM (
                                                 SELECT *, ROW_NUMBER() OVER (
-                                                PARTITION BY {idvars} 
+                                                PARTITION BY {idvar} 
                                                 ORDER BY {sortvar}) 
                                                 AS row_number    
                                                 FROM {table_in}) 

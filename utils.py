@@ -59,9 +59,9 @@ class utils(object):
 
     def sort_and_remove_duplicates(self,table_in,table_out,sortvar,idvar=None):
         query=self.query_bank["sort_and_remove_duplicates"]
-        self.cursor.execute(query.format(table_in=table_in,sortvar=''.join(sortvar),idvar=''.join(idvar) if idvar is not None else ''.join(sortvar)))
+        self.cursor.execute(query.format(table_in=table_in,sortvar=sortvar,idvar=idvar if idvar is not None else sortvar))
         self.cursor.fetchall()
-        self.delete_column([table_in,"row_number"])
+        self.delete_column([[table_in+"_sorted","row_number"]])
         if table_out==table_in:
             self.delete_table([table_in])
             self.rename_table([[table_in+"_sorted",table_in]])

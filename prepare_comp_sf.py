@@ -6,6 +6,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
+
     #query1:
     cursor.execute(queries["query1"].format(freq=freq))
     cursor.fetchall()
@@ -30,6 +31,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     util_funcs.sort_and_remove_duplicates(table_in="__temp3",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
 
     #query4
+
     util_funcs.delete_table(["__temp","__temp1","__temp2","__temp3"])
     util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
                               ["__firm_shares2","n"],["__firm_shares2","row_number"]])
@@ -71,6 +73,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
                               ["__comp_dsf3","divsp"],["__comp_dsf3","fx_div"],
                               ["__comp_dsf3","curcddv"],["__comp_dsf3","prc_high_lcl"],
                               ["__comp_dsf3","prc_low_lcl"]])
+
 
 
 
