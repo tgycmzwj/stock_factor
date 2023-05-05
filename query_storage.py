@@ -136,7 +136,7 @@ class query_storage:
                               INTCK_(CAST(datadate AS text),CAST(MIN(COALESCE(following,'2200-01-01'),COALESCE(forward_max,'2200-01-01')) AS text),'{freq}','discrete') AS n
                           FROM __temp1;""",
             "query4":"""CREATE TABLE __temp4 AS
-                        SELECT *, INTNX_(CAST(datadate AS text),value,'{freq}','end') AS ddate
+                        SELECT *, INTNX_(CAST(datadate AS text),value-1,'{freq}','end') AS ddate
                         FROM __temp3;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
