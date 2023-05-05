@@ -26,7 +26,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n")
 
     #query4
-    cursor.execute(queries["query4"])
+    cursor.execute(queries["query4"].format(freq=freq))
     cursor.fetchall()
     conn.commit()
     print("finished query 4 at time "+time.asctime())
