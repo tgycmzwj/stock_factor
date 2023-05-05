@@ -29,6 +29,49 @@ class query_storage:
         },
 
 
+        "main":{
+            "query1":"""CREATE TABLE world_msf2 AS
+                        SELECT a.*, b.gics AS gics, coalesce(b.sic, c.sic) AS sic, coalesce(b.naics, c.naics) AS naics
+	                    FROM world_msf1 AS a
+	                    LEFT JOIN comp_ind AS b ON a.gvkey=b.gvkey AND a.eom=b.date
+	                    LEFT JOIN crsp_ind AS c ON a.permco=c.permco AND a.permno=c.permno AND a.eom=c.date;""",
+            "query2":"""CREATE TABLE world_msf AS
+                        SELECT 
+                        CASE
+                            WHEN a.me IS NULL THEN ('')
+			                WHEN a.me >= b.nyse_p80 THEN 'mega'
+			                WHEN a.me >= b.nyse_p50 THEN 'large'
+			                WHEN a.me >= b.nyse_p20 THEN 'small'
+			                WHEN a.me >= b.nyse_p1 THEN 'micro'
+			                ELSE 'nano'
+		                END AS size_grp, a.*
+	                    FROM world_msf3 AS a 
+	                    LEFT JOIN scratch.nyse_cutoffs AS b
+	                    ON a.eom=b.eom;""",
+            "query3":"""CREATE TABLE world_data_prelim AS
+                        SELECT a.*, b.*, c.*
+	                    FROM world_msf AS a
+	                    LEFT JOIN market_chars_m AS b
+	                    ON a.id=b.id AND a.eom=b.eom
+	                    LEFT JOIN acc_chars_world AS c
+	                    ON a.gvkey=c.gvkey AND a.eom=c.public_date;""",
+            "query4":"""CREATE TABLE world_data3 AS
+	                    SELECT a.*, b.beta_60m, b.ivol_capm_60m, c.resff3_12_1, d.resff3_6_1, e.mispricing_mgmt, e.mispricing_perf, f.*, g.age
+	                    FROM world_data_prelim AS a
+	                    LEFT JOIN beta_60m AS b ON a.id=b.id AND a.eom=b.eom
+	                    LEFT JOIN resmom_ff3_12_1 AS c ON a.id=c.id AND a.eom=c.eom
+	                    LEFT JOIN resmom_ff3_6_1 AS d ON a.id=d.id AND a.eom=d.eom
+	                    LEFT JOIN mp_factors AS e ON a.id=e.id AND a.eom=e.eom
+	                    LEFT JOIN market_chars_d AS f ON a.id=f.id AND a.eom=f.eom
+	                    LEFT JOIN firm_age AS g ON a.id=g.id AND a.eom=g.eom;""",
+            "query5":"""CREATE TABLE world_data4 AS 
+                        SELECT a.*, b.qmj, b.qmj_prof, b.qmj_growth, b.qmj_safety
+	                    FROM world_data3 AS a 
+	                    LEFT JOIN scratch.qmj AS b
+	                    ON a.excntry=b.excntry AND a.id=b.id AND a.eom=b.eom;""",
+        },
+
+
 
         "prepare_crsp_sf":{
             #query1:
@@ -576,7 +619,100 @@ class query_storage:
 			            SELECT excntry, id, date, eom, ret_exc
 			            FROM {sf}
 			            WHERE ret_lag_dif<=5 AND not ret_exc IS NOT NULL;""",
-            "query2":""" """,
+            "query2":"""CREATE TABLE world_sf1 AS
+			            SELECT excntry, id, eom, ret_exc
+			            FROM {sf}
+			            WHERE ret_lag_dif=1 AND ret_exc IS NOT NULL;""",
+            "query3":"""CREATE TABLE base1 AS
+                        SELECT id, eom, size_grp, excntry, me, market_equity, be_me, at_gr1, niq_be,
+			                source_crsp, exch_main, obs_main, common, comp_exchg, crsp_exchcd, primary_sec, ret_lag_dif
+		                FROM {mchars};""",
+            "query4":"""CREATE TABLE base2 AS 
+                        SELECT * 
+                        FROM base1
+                        ORDER BY id,eom;""",
+            "query5":"""CREATE TABLE base3 AS 
+                        SELECT *,{new_cols},
+                            LAG(id) OVER(PARITION BY id,eom ORDER BY id,eom) AS id_l,
+                            LAG(eom) OVER(PARITION BY id,eom ORDER BY id,eom) AS eom_l,
+                            LAG(source_crsp) OVER(PARITION BY id,eom ORDER BY id,eom) AS srouce_crsp_l
+                        FROM base2""",
+            "query6":"""UPDATE base3
+                        SET {col}_l=
+                        CASE WHEN id!=LAG(id) OR source_crsp!=source_crsp_l OR INTCK_(eom_l,eom,'month','discrete') THEN NULL
+                             ELSE THEN LAG({col}) OVER (PARTITION BY id,eom ORDER BY id,eom)
+                        END;""",
+            "query7":"""CREATE TABLE base4 AS
+		                SELECT *,  
+		                    CASE
+					            WHEN size_grp_l IS NULL then ''
+					            WHEN size_grp_l IN ('large', 'mega') THEN 'big'
+					            ELSE 'small'
+				            END AS size_pf
+		                FROM base3
+		                WHERE obs_main_l=1 AND exch_main_l=1 AND common_l=1 AND primary_sec_l=1 AND ret_lag_dif=1 AND me_l IS NOT NULL
+		                ORDER BY excntry_l, size_grp_l, eom;""",
+
+            "query10":"""CREATE TABLE bp_stocks AS
+			             SELECT *
+			             FROM base4
+			             WHERE ((size_grp_l IN ('small','large','mega') AND excntry_l!='USA') OR ((crsp_exchcd_l=1 OR comp_exchg_l=11) AND excntry_l='USA')) and {char}_l IS NOT NULL
+			             ORDER BY eom, excntry_l;""",
+            "query11":"""CREATE TABLE bps AS
+                         SELECT eom, excntry_l, COUNT(*) AS n,
+                             percentile_cont(0.3) within group (order by {char}_l) AS bp_p30,
+                             percentile_cont(0.7) within group (order by {char}_l) AS bp_p70
+                         FROM bp_stocks
+                         GROUP BY eom, excntry_l;""",
+            "query12":"""CREATE TABLE weights1 AS
+			             SELECT a.excntry_l, a.id, a.eom, a.size_pf, a.me_l,
+				             CASE
+					             WHEN a.{char}_l >= b.bp_p70 THEN 'high'
+					             WHEN a.{char}_l >= b.bp_p30 THEN 'mid'
+					             ELSE 'low'
+				             END AS char_pf
+			             FROM base4 AS a 
+			             LEFT JOIN bps AS b
+			             ON a.excntry_l = b.excntry_l AND a.eom = b.eom
+			             WHERE b.n>={min_stocks_bp} AND a.{char}_l IS NOT NULL AND size_pf!='';""",
+			"query13":"""CREATE TABLE weights2 AS
+			             SELECT *, me_l/SUM(me_l) AS w
+			             FROM weights1
+			             GROUP BY excntry_l, size_pf, char_pf, eom
+			             HAVING COUNT(*)>={min_stocks_pf};""",
+            "query14":"""CREATE TABLE returns AS
+			             SELECT a.*, b.w, b.size_pf, b.char_pf
+			             FROM world_sf2 AS a 
+			             INNER JOIN weights2 AS b
+			             ON a.id = b.id AND a.eom=b.eom AND a.excntry=b.excntry_l;""",
+            "query15":"""CREATE TABLE pfs1 AS
+			             SELECT {char} AS characteristic, excntry, size_pf, char_pf, {__date_col}, SUM(ret_exc*w) AS ret_exc
+			             FROM returns
+			             GROUP BY excntry, size_pf, char_pf, {__date_col};""",
+            "query16":"""CREATE TABLE pfs2 AS 
+                         SELECT * 
+                         FROM pfs1
+                         ORDER BY characteristic excntry {__date_col};""",
+            "query17":"""""",
+            "query18":"""CREATE TABLE {out} AS 
+                         SELECT characteristic, excntry, {__date_col}, 
+                             (small_high+big_high)/2-(small_low+big_low)/2 AS lms, 
+                             (small_high+small_mid+small_low)/3-(big_high+big_mid+big_low)/3 AS smb
+                         FROM pfs3;
+                         """,
+            "query20":"""CREATE TABLE ff AS 
+                         SELECT * 
+                         FROM book_to_market;""",
+            "query29":"""CREATE TABLE hxz AS 
+                         SELECT *,(at_gr1_smb+niq_be_smb)/2 AS smb+hxz,-at_gr1_lms AS inv
+                         FROM hxz4;""",
+            "query30":"""CREATE TABLE {out} AS
+		                 SELECT a.excntry, a.{__date_col}, a.mkt_vw_exc AS mktrf, b.hml, b.smb_ff, c.roe, c.inv, c.smb_hxz
+		                 FROM {mkt} AS a
+		                 LEFT JOIN ff AS b 
+		                 ON a.excntry = b.excntry AND a.{__date_col} = b.{__date_col}
+		                 LEFT JOIN hxz AS c 
+		                 ON a.excntry = c.excntry AND a.{__date_col} = c.{__date_col};"""
         },
 
 
@@ -710,6 +846,48 @@ class query_storage:
             "query5_1": """DROP TABLE IF EXISTS __ex_country1;""",
             "query5_2": """DROP TABLE IF EXISTS __ex_country2;""",
             "query5_3": """DROP TABLE IF EXISTS __ex_country3;""",
+        },
+
+
+
+
+        "comp_sic_naics":{
+            "query1":"""CREATE TABLE comp1 AS
+		                SELECT DISTINCT gvkey, datadate, sich AS sic, naicsh AS naics
+		                FROM COMP_FUNDA;""",
+            "query2":"""CREATE TABLE comp2 AS 
+                        SELECT * 
+                        FROM comp1
+                        WHERE gvkey!='175650' OR datadate!=DATE('2005-12-31') OR naics IS NOT NULL;""",
+            "query3":"""CREATE TABLE comp3 AS
+		                SELECT DISTINCT gvkey, datadate, sich AS sic, naicsh AS naics
+		                FROM COMP.G_FUNDA;""",
+		    "query4":"""CREATE TABLE comp4 AS
+		                SELECT a.gvkey AS gvkeya, a.datadate AS datea, a.sic AS sica, a.naics AS naicsa, 
+			                b.gvkey AS gvkeyb, b.datadate AS dateb, b.sic AS sicb, b.naics AS naicsb
+		                FROM comp2 AS a 
+		                FULL OUTER JOIN comp3 AS b
+		                ON a.gvkey = b.gvkey AND a.datadate = b.datadate;""",
+            "query5":"""CREATE TABLE comp5 AS 
+                        SELECT *,coalesce(gvkeya, gvkeyb) AS gvkey, coalesce(datea, dateb) AS date,
+                            coalesce(sica, sicb) AS sic, coalesce(naicsa, naicsb) AS naics
+                        FROM comp4;""",
+            "query6":"""CREATE TABLE comp5_sorted AS
+                        SELECT *
+                        FROM comp5
+                        ORDER BY gvkey,date DESC;""",
+            "query7":"""CREATE TABLE comp6 AS
+                        SELECT *,LAG(date) OVER (GROUP BY gvkey ORDER BY gvkey,date DESC) AS date_l,
+                            NULL AS valid_to
+                        FROM comp5_sorted;""",
+            "query8":"""UPDATE comp6
+                        SET valid_to=
+                        CASE WHEN date_l IS NOT NULL THEN INTNX_('day',date_l,-1)
+                             ELSE date 
+                        END;""",
+            "query9":"""CREATE TABLE comp7 AS
+                        SELECT *,INTCK_('day',date,valid_to,'discrete') AS comp_diff
+                        ORDER BY gvkey,date,valid_to;""",
         },
 
 
