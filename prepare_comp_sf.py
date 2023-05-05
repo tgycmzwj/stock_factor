@@ -3,6 +3,7 @@ import utils
 
 
 def prepare_comp_sf(conn,cursor,queries,freq="m"):
+    freq="month" if freq=="m" else "day"
     util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
@@ -22,7 +23,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     cursor.fetchall()
     print("finished query 3 at time "+time.asctime())
     util_funcs.delete_column([["__temp2","row_number"]])
-    util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n")
+    util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n",freq=)
 
     #query4
     cursor.execute(queries["query4"])

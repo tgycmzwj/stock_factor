@@ -136,7 +136,7 @@ class query_storage:
                               CAST(JULIANDAY(MIN(following,forward_max))-JULIANDAY(datadate) AS int) AS n
                           FROM __temp1;""",
             "query4":"""CREATE TABLE __temp4 AS
-                        SELECT *, INTNX_(CAST(datadate AS text),value,'day','end') AS ddate
+                        SELECT *, INTNX_(CAST(datadate AS text),value,{freq},'end') AS ddate
                         FROM __temp3;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
