@@ -145,7 +145,7 @@ class query_storage:
 			                CASE WHEN a.prcstd!=5 THEN a.prcld ELSE NULL END AS prc_low_lcl,   
 			            cshtrd,COALESCE(a.cshoc/1e6, b.csho_fund*b.ajex_fund/a.ajexdi) AS cshoc, 
 		   	            (a.prccd/a.ajexdi*a.trfd) AS ri_local,a.curcddv,a.div,a.divd,a.divsp 
-		                FROM comp.secd AS a 
+		                FROM comp_secd AS a 
 		                LEFT JOIN __firm_shares2 AS b
 		                ON a.gvkey=b.gvkey AND a.datadate=b.ddate;""",
             "query6":"""UPDATE __comp_dsf_na
@@ -163,7 +163,7 @@ class query_storage:
 			                CASE WHEN prcstd!=5 THEN prchd/qunit ELSE NULL END AS prc_high_lcl,  
 			                CASE WHEN prcstd!=5 THEN prcld/qunit ELSE NULL END AS prc_low_lcl,  
 			                cshtrd, ((prccd/qunit)/ajexdi*trfd) AS ri_local, curcddv, div, divd, divsp
-		                FROM comp.g_secd;""",
+		                FROM comp_g_secd;""",
             "query8":"""CREATE TABLE __comp_dsf1 AS 
                         SELECT * FROM __comp_dsf_na
 		                UNION
@@ -222,7 +222,7 @@ class query_storage:
 					         COALESCE(a.cshom/1e6,a.csfsm/1e3,a.cshoq,b.csho_fund*b.ajex_fund/a.ajexm) AS cshoc, 
 					         a.dvpsxm,a.cshtrm,a.curcddvm,a.prccm/a.ajexm*a.trfm AS ri_local, 
 					         c.fx AS fx, d.fx AS fx_div
-				         FROM comp.secm AS a
+				         FROM comp_secm AS a
 				         LEFT JOIN __firm_shares2 AS b
 					     ON a.gvkey=b.gvkey AND a.datadate=b.ddate
 				         LEFT JOIN fx AS c
@@ -687,9 +687,9 @@ class query_storage:
 
         "comp_exchanges": {
             "query1": """CREATE TABLE __ex_country1 AS
-                                SELECT DISTINCT exchg,excntry FROM comp.g_security
+                                SELECT DISTINCT exchg,excntry FROM comp_g_security
                                 UNION
-                                SELECT DISTINCT exchg,excntry FROM comp.security;""",
+                                SELECT DISTINCT exchg,excntry FROM comp_security;""",
             "query2": """CREATE TABLE __ex_country2 AS
         		                SELECT DISTINCT exchg,
         			            CASE
@@ -702,7 +702,7 @@ class query_storage:
             "query3": """CREATE TABLE __ex_country3 AS
         		                SELECT a.*, b.exchgdesc
         		                FROM __ex_country2 AS a 
-        		                LEFT JOIN comp.r_ex_codes AS b
+        		                LEFT JOIN comp_r_ex_codes AS b
         		                ON a.exchg=b.exchgcd;""",
             "query4": """CREATE TABLE {out} AS
         		                SELECT *, (excntry!='multi_national' AND exchg NOT IN {special_exchanges}) AS exch_main
@@ -1225,18 +1225,18 @@ class query_storage:
 
         "standardized_accounting_data":{
             "query1":"""SELECT DISTINCT LOWER(name) AS qvars_q
-                        FROM pragma_table_info('COMP.FUNDQ') 
+                        FROM pragma_table_info('COMP_FUNDQ') 
                         WHERE LOWER(name) LIKE '%q'
                         UNION 
                         SELECT DISTINCT LOWER(name) AS qvars_q
-                        FROM pragma_table_info('COMP.G_FUNDQ') 
+                        FROM pragma_table_info('COMP_G_FUNDQ') 
                         WHERE LOWER(name) LIKE '%q';""",
             "query2":"""SELECT DISTINCT LOWER(name) AS qvars_q
-                        FROM pragma_table_info('COMP.FUNDQ') 
+                        FROM pragma_table_info('COMP_FUNDQ') 
                         WHERE LOWER(name) LIKE '%y'
                         UNION 
                         SELECT DISTINCT LOWER(name) AS qvars_q
-                        FROM pragma_table_info('COMP.G_FUNDQ') 
+                        FROM pragma_table_info('COMP_G_FUNDQ') 
                         WHERE LOWER(name) LIKE '%y';""",
             "query3":"""CREATE TABLE g_funda1 AS 
                         SELECT gvkey,datadate,indfmt,curcd,{keep_list},'GLOBAL' AS source,
@@ -1255,7 +1255,7 @@ class query_storage:
                             ppentq+dpactq AS ppegtq,NULL AS icaptq,NULL AS niy,NULL AS txditcq,
                             NULL AS txpq,NULL AS xidoq,NULL AS xidoy,NULL AS xrdq,NULL AS xrdy,
                             NULL AS txbcofy
-                        FROM comp.g_fundq 
+                        FROM comp_g_fundq 
                         WHERE {compcond} AND datadate>={start_date};""",
             "query7":"""CREATE TABLE {qname} AS
 			            SELECT *
