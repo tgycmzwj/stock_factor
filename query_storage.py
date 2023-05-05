@@ -133,7 +133,7 @@ class query_storage:
                             FROM __temp;""",
             "query3":"""CREATE TABLE __temp2 AS 
                           SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
-                              INTCK_(CAST(datadate AS text),CAST(MIN(following,forward_max) AS text),'{freq}','discrete') AS n
+                              INTCK_(CAST(datadate AS text),CAST(MIN(COALESCE(following,'2200-01-01'),COALESCE(forward_max,'2200-01-01')) AS text),'{freq}','discrete') AS n
                           FROM __temp1;""",
             "query4":"""CREATE TABLE __temp4 AS
                         SELECT *, INTNX_(CAST(datadate AS text),value,'{freq}','end') AS ddate
