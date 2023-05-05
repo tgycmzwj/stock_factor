@@ -137,7 +137,8 @@ class query_storage:
                           FROM __temp1;""",
             "query4":"""CREATE TABLE __temp4 AS
                         SELECT *, INTNX_(CAST(datadate AS text),value-1,'{freq}','end') AS ddate
-                        FROM __temp3;""",
+                        FROM __temp3
+                        ORDER BY gvkey,datadate,ddate;""",
             "query5":"""CREATE TABLE __comp_dsf_na AS
                         SELECT a.gvkey,a.iid,a.datadate,a.tpci,a.exchg,a.prcstd,a.curcdd,a.prccd AS prc_local,a.ajexdi, 
                             CASE WHEN a.prcstd!=5 THEN a.prchd ELSE NULL END AS prc_high_lcl,  
