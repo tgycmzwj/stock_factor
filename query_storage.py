@@ -1538,28 +1538,29 @@ class query_storage:
             "query3":"""CREATE TABLE dates_apply AS 
                         SELECT *, (ROW_NUMBER() OVER()-1) % {__n} AS grp 
                         FROM month_ends;""",
-            "query4":"""create table calc_dates as
-			select a.eom, b.eom as calc_date
-			from dates_apply as a left join dates_apply(where=(grp = &__grp.)) as b
-			on a.eom > intnx("month", b.eom, -&__n., "e") and a.eom <= b.eom;""",
-            "query5":"""create table calc_data as 
-			select a.*, b.calc_date
-			from __msf2 as a left join calc_dates as b
-			on a.eom = b.eom
-			where not missing(b.calc_date)  
-			group by a.id, b.calc_date
-			having count(*) >= &__min.
-			order by a.id, b.calc_date;""",
+            "query4":"""CREATE TABLE calc_dates AS
+                        SELECT a.eom, b.eom AS calc_date
+                        FROM dates_apply AS a 
+                        LEFT JOIN dates_apply(where=(grp = &__grp.)) AS b
+                        ON a.eom>INTNX_("month", b.eom, -{__n}, 'end') AND a.eom<=b.eom;""",
+            "query5":"""CREATE TABLE calc_data AS 
+                        SELECT a.*, b.calc_date
+                        FROM __msf2 AS a 
+                        LEFT JOIN calc_dates AS b
+                        ON a.eom = b.eom
+                        WHERE b.calc_date IS NOT NULL
+                        GROUP BY a.id, b.calc_date
+                        HAVING count(*) >= {__min}
+                        ORDER BY a.id, b.calc_date;""",
             "query6":"""CREATE TABLE __capm1 AS
-SELECT id, calc_date,
-       SUM(ret_exc * mktrf) / SUM(mktrf * mktrf) AS beta,
-       AVG(ret_exc) - AVG(mktrf) * SUM(ret_exc * mktrf) / SUM(mktrf * mktrf) AS alpha
-FROM calc_data
-GROUP BY id, calc_date;""",
-            "query7":"""create table __capm2 as 
-			select id, calc_date as eom, mktrf as beta_&__n.m, sqrt(_rmse_**2 * _edf_ / (_edf_ + 1)) as ivol_capm_&__n.m
-			from __capm1
-			where (_edf_ + 2) >= &__min.;"""
+                        SELECT id, calc_date, SUM(ret_exc*mktrf)/SUM(mktrf*mktrf) AS beta,
+                            AVG(ret_exc)-AVG(mktrf)*SUM(ret_exc*mktrf)/SUM(mktrf*mktrf) AS alpha
+                        FROM calc_data
+                        GROUP BY id, calc_date;""",
+            "query7":"""CREATE TABLE __capm2 AS 
+                        SELECT id, calc_date AS eom, mktrf AS beta_&__n.m, sqrt(_rmse_**2*_edf_/(_edf_+1)) AS ivol_capm_{__n}m
+                        FROM __capm1
+			            WHERE (_edf_+2)>={__min};"""
         },
 
 
@@ -1717,6 +1718,59 @@ GROUP BY id, calc_date;""",
 
 
 
+        "pitroski_f":{
+            "query1":"""CREATE TABLE {name}_temp1 AS
+                        SELECT *,LAG(at_x,12) OVER() AS atx_l12,LAG(__f,12) OVER() AS atx_l12,
+                            LAG(sale_x,12) OVER() AS salex_l12, 
+                        FROM {name};""",
+            "query2":"""UPDATE {name}__temp1
+                        SET __f_roa=
+                        CASE WHEN count<=12 OR atxl12<=0 THEN NULL
+                             ELSE ni_x/atx_l12
+                        END;""",
+            "query3":"""UPDATE {name}__temp1
+                        SET __f_croa=
+                        CASE WHEN count<=12 OR atxl12<=0 THEN NULL
+                             ELSE ocf_x/atx_l12
+                        END;""",
+            "query4":"""UPDATE {name}__temp1
+                        SET __f_droa=
+                        CASE WHEN count<=12 THEN NULL
+                             ELSE __f_roa-LAG(__f_roa,12) OVER()
+                        END;""",
+            "query5":"""UPDATE {name}__temp1
+                        SET __f_acc=__f_croa-__f_roa;""",
+            "query6":"""UPDATE {name}__temp1
+                        SET __f_lev=
+                        CASE WHEN count<=12 OR at_x<=0 OR atx_l12<=0 THEN NULL
+                             ELSE dltt/at_x-lag(dltt/at_x,12) OVER()
+                        END;""",
+            "query7":"""UPDATE {name}__temp1
+                        SET __f_liq=
+                        CASE WHEN count<=12 OR cl_x<=0 OR LAG(cl_x,12) OVER()<=0 THEN NULL
+                             ELSE ca_x/cl_x-lag(ca_x/cl_x,12) OVER()
+                        END;""",
+            "query8":"""UPDATE {name}__temp1
+                        SET __f_gm=
+                        CASE WHEN count<=12 OR sale_x<=0 OR salex_l12<=0 THEN NULL
+                             ELSE gp_x/sale_x-LAG(gp_x/sale_x,12) OVER()
+                        END;""",
+            "query9":"""UPDATE {name}__temp1
+                        SET __f_gm=
+                        CASE WHEN count<=24 OR atx_l12<=0 OR LAG(at_x,25) OVER()<=0 THEN NULL
+                             ELSE sale_x/atx_l12-salex_l12/LAG(at_x,24)
+                        END;""",
+            "query10":"""UPDATE {name}__temp1
+                         SET __f_gm=
+                         CASE WHEN __f_roa IS NULL OR __f_croa IS NULL OR __f_droa IS NULL OR __f_acc IS NULL OR __f_lev IS NULL OR __f_liq IS NULL OR __f_gm IS NULL OR __f_aturn IS NULL THEN NULL
+                              ELSE (__f_roa>0)+(__f_croa>0)+(__f_droa>0)+(__f_acc>0)+(__f_lev<0)+(__f_liq>0)+(coalesce(eqis_x,0)=0)+(__f_gm>0)+(__f_aturn>0)
+                         END;"""
+        },
+
+
+
+
+
         "prepare_daily":{
             "query1":"""CREATE TABLE dsf1 AS 
                        SELECT a.excntry, a.id, a.date, a.eom, a.prc/a.adjfct AS prc_adj, 
@@ -1783,6 +1837,56 @@ GROUP BY id, calc_date;""",
 
 
 
+        "residual_momentum":{
+            "query1":"""CREATE TABLE __msf1 AS 
+                        SELECT a.id, a.eom, a.ret_exc, a.ret_lag_dif, b.mktrf, b.hml, b.smb_ff, b.roe, b.inv, b.smb_hxz
+                        FROM {data} AS a 
+                        LEFT JOIN {fcts} AS b
+                        ON a.excntry=b.excntry AND a.eom=b.eom
+                        WHERE a.ret_local!=0 AND a.ret_exc IS NOT NULL and b.mktrf IS NOT NULL and ret_lag_dif=1;""",
+            "query2":"""CREATE TABLE month_ends AS 
+                        SELECT DISTINCT eom
+		                FROM __msf2
+		                ORDER BY eom;""",
+            "query3":"""CREATE TABLE dates_apply AS
+                        SELECT *, (ROW_NUMBER() OVER (ORDER BY eom)-1) % {__n} AS grp
+                        FROM month_ends;""",
+            "query4":"""CREATE TABLE calc_dates AS
+                        SELECT a.eom, b.eom AS calc_date
+                        FROM dates_apply AS a 
+                        LEFT JOIN dates_apply AS b
+                        ON a.eom>INTNX_("month", b.eom, -{__n}, "e") AND a.eom <= b.eom
+                        WHERE grp = {__grp};""",
+            "query5":"""CREATE TABLE calc_data AS 
+                        SELECT a.*, b.calc_date
+                        FROM __msf2 AS a 
+                        LEFT JOIN calc_dates AS b
+                        ON a.eom = b.eom
+                        WHERE b.calc_date IS NOT NULL  
+                        GROUP BY a.id, b.calc_date
+                        HAVING count(*) >= {__min] 
+                        ORDER BY a.id, b.calc_date;""",
+            "query6":"""CREATE TABLE __ff3_res1 (id TEXT, calc_date DATE, residual REAL);""",
+            "query7":"""INSERT INTO __ff3_res1 (id,calc_date,residual)
+                        SELECT id,calc_date,ret_exc-(intercept+mktrf_coeff*mktrf+smb_ff_coeff*smb_ff+hml_coeff*hml) AS residual
+                        FROM calc_data
+                        WHERE NOT (hml IS NULL OR smb_ff IS NULL);""",
+            "query8":"""CREATE TABLE __ff3_res2 AS 
+                        SELECT *, (eom>INTNX_("month",calc_date,-{__in},'e') AND eom<=INTNX_("month",calc_date,-{__sk},'e')) AS incl  
+                        FROM __ff3_res1 
+                        GROUP BY id, calc_date
+                        HAVING count(res) >= {__min} 
+                        ORDER BY id, calc_date, eom;""",
+	 		"query9":"""CREATE TABLE __ff3_res3 AS 
+	 		            SELECT id,calc_date AS eom,mean(res)/std(res) AS resff3_{__in}_{__sk}
+	 		            FROM __ff3_res2
+	 		            WHERE incl = 1
+	 				    GROUP BY id, calc_date;"""
+        },
+
+
+
+
         "return_cutoffs":{
             "query1":"""CREATE TABLE base AS 
                         SELECT *, 
@@ -1815,6 +1919,77 @@ GROUP BY id, calc_date;""",
 		  			    FROM {out} AS a
 		  			    LEFT JOIN cutoffs AS b
 		  			    ON a.year=b.year AND a.month=b.month;"""
+        },
+
+
+
+
+
+        "roll_apply_daily":{
+            "query1":"""CREATE TABLE dates_apply AS
+                        SELECT *, (ROW_NUMBER() OVER (ORDER BY eom) - 1) % {__n} AS grp
+                        FROM __month_ends;""",
+            "query2":"""CREATE TABLE calc_dates AS
+                        SELECT a.eom, b.eom AS calc_date
+                        FROM dates_apply AS a 
+                        LEFT JOIN dates_apply AS b
+                        ON a.eom>INTNX_("month",b.eom,-{__n},"e") AND a.eom<=b.eom
+                        WHERE grp={__grp};""",
+            "query3":"""CREATE TABLE calc_data_raw AS 
+                        SELECT a.*, b.calc_date
+                        FROM __input AS a 
+                        LEFT JOIN calc_dates AS b
+                        ON a.eom = b.eom
+                        WHERE b.calc_date IS NOT NULL  
+                        ORDER BY a.id, b.calc_date;""",
+			"query4":"""CREATE TABLE calc_data_screen AS 
+			            SELECT *
+			            FROM calc_data_raw
+			            WHERE ret_exc IS NOT NULL AND zero_obs<10  
+			            GROUP BY id, calc_date
+			            HAVING count(ret_exc)>={__min};""",
+            "query5":"""CREATE TABLE __rvol AS 
+				        SELECT id, calc_date AS eom, std(ret_exc) AS rvol{sfx}
+				        FROM calc_data_screen
+				        GROUP BY id, calc_date
+				        HAVING COUNT(ret_exc)>={__min};""",
+            "query6":"""CREATE TABLE __rmax1 AS
+                        SELECT *,ROW_NUMBER() OVER (PARTITION BY id, calc_date ORDER BY ret DESC) AS ret_rank
+                        FROM calc_data_screen;""",
+            "query7":"""CREATE TABLE __rmax2 AS 
+                        SELECT id, calc_date AS eom, AVG(ret) AS rmax5{sfx}, MAX(ret) AS rmax1{sfx}
+                        FROM __rmax1
+                        WHERE ret_rank<=5
+                        GROUP BY id, calc_date;""",
+            "query8":"""CREATE TABLE __skew1 AS
+                        SELECT id, calc_date AS eom,
+                            (COUNT(ret_exc)*SUM((ret_exc-AVG(ret_exc))*(ret_exc-AVG(ret_exc))*(ret_exc-AVG(ret_exc))))/((COUNT(ret_exc)-1)*(COUNT(ret_exc)-2)*POWER(STDDEV(ret_exc),3)) AS rskew{sfx}
+                        FROM calc_data_screen
+                        GROUP BY id, calc_date;""",
+            "query9":"""CREATE TABLE __skew2 AS
+                        SELECT id, calc_date AS eom, rskew{sfx}
+                        FROM __skew1
+                        WHERE _freq_>={__min};""",
+            "query10":"""CREATE TABLE __prc_high AS 
+                         SELECT id, calc_date AS eom, prc_adj/MAX(prc_adj) AS prc_highprc{sfx}
+                         FROM calc_data_screen
+                         GROUP BY id, calc_date
+                         HAVING date=max(date) AND count(prc_adj)>={__min};""",
+            "query11":"""CREATE TABLE __ami AS 
+                         SELECT id, calc_date AS eom, AVG(ABS(ret)/dolvol_d)*1e6 AS ami{sfx}
+                         FROM calc_data_screen
+                         GROUP BY id, calc_date
+                         HAVING COUNT(dolvol_d)>={__min};""",
+            "query12":"""CREATE TABLE __capm1 AS
+                         SELECT id, calc_date AS eom,
+                             ((COUNT(*)*SUM(mktrf*ret_exc)-SUM(mktrf)*SUM(ret_exc))/(COUNT(*)*SUM(mktrf*mktrf)-SUM(mktrf)*SUM(mktrf))) AS beta,
+                             (AVG(ret_exc)-((COUNT(*)*SUM(mktrf*ret_exc)-SUM(mktrf)*SUM(ret_exc))/(COUNT(*)*SUM(mktrf*mktrf)-SUM(mktrf)*SUM(mktrf)))*AVG(mktrf)) AS alpha
+                         FROM calc_data_screen
+                         GROUP BY id, calc_date;""",
+            "query13":"""CREATE TABLE __capm2 AS 
+                         SELECT id, calc_date AS eom, mktrf AS beta&sfx., sqrt(_rmse_**2 * _edf_ / (_edf_ + 1)) as ivol_capm&sfx.
+                         FROM __capm1
+                         WHERE (_edf_+2)>={__min};"""
         },
 
 
