@@ -2060,7 +2060,155 @@ class query_storage:
                          SELECT a.*, b.iskew_capm{sfx}, c.coskew{sfx}
                          FROM __capm_ext2 AS a
                          LEFT JOIN __capm_ext_skew AS b ON a.id=b.id AND a.eom=b.calc_date
-                         LEFT JOIN __capm_ext_coskew2 AS c ON a.id=c.id AND a.eom=c.calc_date;"""
+                         LEFT JOIN __capm_ext_coskew2 AS c ON a.id=c.id AND a.eom=c.calc_date;""",
+            "query22":"""CREATE TABLE filtered_data AS
+                         SELECT *
+                         FROM calc_data_screen
+                         WHERE hml IS NOT NULL AND smb_ff IS NOT NULL;""",
+            "query23":"""CREATE TEMPORARY TABLE __ff31 AS
+                         SELECT id, calc_date, mktrf, smb_ff, hml,
+                             avg(ret_exc) AS intercept,
+                             avg(ret_exc) - avg(mktrf) * avg(mktrf) AS mktrf_coef,
+                             avg(ret_exc) - avg(smb_ff) * avg(smb_ff) AS smb_ff_coef,
+                             avg(ret_exc) - avg(hml) * avg(hml) AS hml_coef,
+                             COUNT(*) AS edf
+                         FROM filtered_data
+                         GROUP BY id, calc_date;""",
+            "query24":"""CREATE TABLE __ff3_res AS
+                         SELECT id, calc_date, ret_exc-(intercept+mktrf_coef*mktrf+smb_ff_coef*smb_ff+hml_coef*hml) AS residual
+                         FROM filtered_data;""",
+            "query25":"""CREATE TABLE __ff32 AS 
+                         SELECT id, calc_date AS eom, SQRT(_rmse_**2*_edf_/(_edf_+1)) AS ivol_ff3{sfx}
+                         FROM __ff31
+                         WHERE (_edf_+4)>={__min};""",
+            "query26":"""CREATE TABLE __ff3_skew AS
+                         SELECT id, calc_date, AVG(res) AS mean_res, SUM((res-AVG(res))*(res-AVG(res))*(res-AVG(res)))/(COUNT(res)*POWER(STDDEV(res),3)) AS skewness
+                         FROM __ff3_res
+                         GROUP BY id, calc_date
+                         WHERE freq_>={__min};""",
+            "query27":"""CREATE TABLE __ff33 AS 
+                         SELECT a.*, b.iskew_ff3{sfx}
+                         FROM __ff32 AS a
+                         LEFT JOIN __ff3_skew AS b 
+                         ON a.id=b.id AND a.eom=b.calc_date;""",
+            "query28":"""CREATE TABLE __hxz4_res AS
+                         SELECT t.id, t.calc_date, t.ret_exc - (h.intercept + h.mktrf * t.smb_hxz + t.roe * t.inv) AS residual
+                         FROM calc_data_screen_filtered AS t
+                         JOIN __hxz41 AS h ON t.id = h.id AND t.calc_date = h.calc_date;""",
+            "query29":"""CREATE TABLE __hxz42 AS 
+                         SELECT id, calc_date AS eom, SQRT(_rmse_**2*_edf_/(_edf_+1)) AS ivol_hxz4{sfx}
+				         FROM __hxz41
+				         WHERE (_edf_+5)>={__min};""",
+            "query30":"""CREATE TABLE __hxz4_skew AS
+                         SELECT id, calc_date, skewness(res) AS iskew_hxz4
+                         FROM __hxz4_res
+                         GROUP BY id, calc_date
+                         HAVING COUNT(res)>={__min};""",
+            "query31":"""CREATE TABLE __hxz43 AS 
+                         SELECT a.*, b.iskew_hxz4{sfx}
+                         FROM __hxz42 AS a
+                         LEFT JOIN __hxz4_skew AS b 
+                         ON a.id=b.id AND a.eom=b.calc_date;""",
+            "query32":"""CREATE TABLE __dimson1 AS 
+                         SELECT a.excntry, a.id, a.date, a.eom, a.ret_exc, a.mktrf, b.mktrf_lg1, b.mktrf_ld1
+                         FROM calc_data_screen AS a 
+                         LEFT JOIN mkt_lead_lag4 AS b
+                         ON a.excntry = b.excntry AND a.date = b.date
+                         WHERE b.mktrf_lg1 IS NOT NULL AND b.mktrf_ld1 IS NOT NULL;""",
+            "query33":"""CREATE TABLE __dimson2 AS 
+                         SELECT *
+                         FROM __dimson1
+                         GROUP BY id, eom
+                         HAVING count(*)>=({__min}-1)""",
+            "query34":"""CREATE VIEW lagged_mktrf AS
+                         SELECT id, eom, mktrf, 
+                             LAG(mktrf) OVER (PARTITION BY id ORDER BY eom) AS mktrf_lg1,
+                             LAG(mktrf, 2) OVER (PARTITION BY id ORDER BY eom) AS mktrf_ld1
+                         FROM __dimson2;""",
+            "query35":"""CREATE TABLE __dimson3 AS
+                         SELECT id, eom, ret_exc-(intercept+mktrf*mktrf_lg1+mktrf*mktrf_ld1) AS residual
+                         FROM (SELECT *,
+                             (SELECT intercept FROM regression_results WHERE id=t.id AND eom=t.eom) AS intercept,
+                             (SELECT mktrf FROM regression_results WHERE id=t.id AND eom=t.eom) AS mktrf
+                             FROM lagged_mktrf AS t);""",
+            "query36":"""CREATE TABLE __dimson4 AS 
+                         SELECT id,eom,mktrf+mktrf_lg1+mktrf_ld1 AS beta_dimson{sfx}
+                         FROM __dimson3;""",
+            "query37":"""CREATE VIEW filtered_data AS
+                         SELECT *
+                         FROM calc_data_screen
+                         WHERE mktrf < 0;""",
+            "query38":"""CREATE TABLE __downbeta1 AS
+                         SELECT id, calc_date, intercept, mktrf AS downbeta
+                         FROM (SELECT id, calc_date, AVG(ret_exc) AS intercept, SUM(ret_exc * mktrf) / SUM(mktrf * mktrf) AS mktrf
+                               FROM filtered_data
+                               GROUP BY id, calc_date);""",
+            "query39":"""CREATE TABLE __downbeta2 AS 
+                         SELECT id, calc_date AS eom, mktrf AS betadown{sfx}
+                         FROM __downbeta1
+				         WHERE (_edf_+2)>=({__min}/2);""",
+            "query40":"""CREATE TABLE __zero_trades1 AS
+                         SELECT id, calc_date AS eom, AVG(tvol=0)*21 as zero_trades, AVG(tvol/(shares*1e6)) AS turnover
+                         FROM calc_data_raw
+                         WHERE tvol IS NOT NULL
+                         GROUP BY id, calc_date
+                         HAVING count(tvol)>={__min}
+                         ORDER BY eom;""",
+            "query41":"""CREATE VIEW filtered_data AS
+                         SELECT *
+                         FROM __zero_trades1
+                         WHERE zero_trades IS NOT NULL AND turnover IS NOT NULL;""",
+            "query42":"""CREATE TABLE __zero_trades2 AS
+                         SELECT *, RANK() OVER (PARTITION BY eom ORDER BY turnover DESC) AS rank_turnover
+                         FROM filtered_data;""",
+            "query43":"""CREATE TABLE __zero_trades3 AS
+                         SELECT id, eom, zero_trades+rank_turnover/100 AS zero_trades{sfx} 
+				         FROM __zero_trades2;""",
+            "query44":"""CREATE TABLE __turnover1 AS 
+                         SELECT id, date, calc_date, tvol/(shares*1e6) AS turnover_d  
+				         FROM calc_data_raw;""",
+            "query45":"""CREATE TABLE __turnover2 AS 
+                         SELECT id, calc_date as eom, AVG(turnover_d) AS turnover{sfx}, std(turnover_d)/AVG(turnover_d) as turnover_var{sfx} 
+                         FROM __turnover1
+                         GROUP BY id, calc_date
+                         HAVING COUNT(turnover_d)>={__min};""",
+            "query46":"""CREATE TABLE __dolvol AS 
+                         SELECT id, calc_date AS eom, AVG(dolvol_d) AS dolvol{sfx}, std(dolvol_d)/AVG(dolvol_d) AS dolvol_var{sfx}
+                         FROM calc_data_raw
+                         GROUP BY id, calc_date
+                         HAVING COUNT(dolvol_d) >= {__min};""",
+            "query47":"""CREATE TABLE __corr_data1 AS 
+                         SELECT a.*, b.calc_date
+                         FROM corr_data AS a 
+                         LEFT JOIN calc_dates AS b
+                         ON a.eom = b.eom
+                         WHERE b.calc_date IS NOT NULL AND ret_exc_3l IS NOT NULL AND zero_obs < 10
+                         ORDER BY a.id, b.calc_date;""",
+            "query48":"""CREATE TABLE __corr_data2 AS 
+                         SELECT *
+                         FROM __corr_data1
+                         GROUP BY id, calc_date
+                         HAVING COUNT(ret_exc_3l) >= {__min} AND COUNT(mkt_exc_3l)>={__min};""",
+            "query49":"""CREATE VIEW filtered_data AS
+                         SELECT id, calc_date, ret_exc_3l, mkt_exc_3l
+                         FROM __corr_data2
+                         WHERE ret_exc_3l IS NOT NULL AND mkt_exc_3l IS NOT NULL;""",
+            "query49":"""CREATE TABLE __corr1 AS
+                         SELECT id, calc_date,CORR(ret_exc_3l, mkt_exc_3l) AS corr_ret_mkt
+                         FROM filtered_data
+                         GROUP BY id, calc_date;""",
+            "query50":"""CREATE TABLE __corr2 AS 
+                         SELECT id, calc_date AS eom, ret_exc_3l AS corr&sfx.
+				         FROM __corr1
+				         WHERE _type_='CORR' AND _name_ = 'mkt_exc_3l';""",
+            "query51":"""CREATE TABLE __mktvol as 
+                         SELECT id, calc_date AS eom, STD(mktrf) AS __mktvol{sfx}
+                         FROM calc_data_screen
+                         GROUP BY id, calc_date
+                         HAVING COUNT(ret_exc) >= {__min};""",
+            "query52":"""SELECT name AS memname
+                         FROM sqlite_master
+                         WHERE type = 'table' AND lower(tbl_name) = 'work' AND tbl_name REGEXP '^op_';"""
         },
 
 
