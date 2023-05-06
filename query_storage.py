@@ -1236,7 +1236,14 @@ class query_storage:
 			            GROUP BY a.gvkey, a.curcd, b.calc_date
 			            HAVING count(*) >= &__min.
 			            ORDER BY a.gvkey, b.calc_date;""",
-            "query8":""" """,
+            "query8":"""CREATE TABLE __earn_pers1 AS
+                        SELECT gvkey, curcd, calc_date,
+                            (SUM(__ni_at_l1 * __ni_at_l1) - SUM(__ni_at_l1) * SUM(__ni_at_l1) / COUNT(*)) / (COUNT(*) - 1) AS variance,
+                            (SUM(__ni_at_l1 * __ni_at) - SUM(__ni_at_l1) * SUM(__ni_at) / COUNT(*)) / (COUNT(*) - 1) AS covariance,
+                            (SUM(__ni_at * __ni_at) - SUM(__ni_at) * SUM(__ni_at) / COUNT(*)) / (COUNT(*) - 1) AS dependent_variance,
+                            (SUM(__ni_at_l1 * __ni_at) - SUM(__ni_at_l1) * SUM(__ni_at) / COUNT(*)) / (COUNT(*) - 1) / (SUM(__ni_at_l1 * __ni_at_l1) - SUM(__ni_at_l1) * SUM(__ni_at_l1) / COUNT(*)) AS estimated_coefficient
+                        FROM calc_data
+                        GROUP BY gvkey, curcd, calc_date;""",
             "query9":"""CREATE TABLE __earn_pers2 AS
 			            SELECT gvkey, curcd, calc_date AS datadate, __ni_at_l1 AS ni_ar1, sqrt(_rmse_**2*_edf_/(_edf_+1)) AS ni_ivol
 			            FROM __earn_pers1
