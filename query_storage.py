@@ -779,7 +779,68 @@ class query_storage:
 		                LEFT JOIN market_returns_daily AS b
 		                ON a.excntry=b.excntry AND a.date=b.date
 		                WHERE b.mkt_vw_exc IS NOT NULL
-		                ORDER BY id, date;"""
+		                ORDER BY id, date;""",
+            "query2":"""CREATE TABLE __dsf2 AS 
+                        SELECT *, NULL AS prc_low_r, NULL AS prc_high_r 
+                        FROM __dsf1;""",
+            "query3":"""UPDATE __dsf2 AS t
+                        SET prc_low_in = prc_low,
+                            prc_high_in = prc_high,
+                            hlreset = 0,
+                            prc_high = CASE WHEN bidask = 1 OR prc_low = prc_high OR prc_low <= 0 OR prc_high <= 0 OR tvol = 0 THEN NULL ELSE prc_high END,
+                            prc_low = CASE WHEN bidask = 1 OR prc_low = prc_high OR prc_low <= 0 OR prc_high <= 0 OR tvol = 0 THEN NULL ELSE prc_low END,
+                            prc_low_r = CASE WHEN first.id THEN NULL ELSE prc_low_r END,
+                            prc_high_r = CASE WHEN first.id THEN NULL ELSE prc_high_r END,
+                            hlreset = CASE WHEN 0 < prc_low < prc_high THEN 1
+                                           WHEN prc_low_r <= prc AND prc <= prc_high_r THEN 1
+                                           WHEN prc < prc_low_r THEN 2
+                                           WHEN prc > prc_high_r THEN 3
+                                           ELSE hlreset END,
+                            prc_low = CASE WHEN prc_low ^= 0 AND prc_high / prc_low > 8 THEN NULL ELSE prc_low END,
+                            prc_high = CASE WHEN prc_low ^= 0 AND prc_high / prc_low > 8 THEN NULL ELSE prc_high END;""",
+            "query7":"""CREATE TABLE __dsf3 AS
+                        SELECT *, 0 AS retadj, prc_low AS prc_low_t, prc_high AS prc_high_t,
+                            LAG(prc_low) OVER (ORDER BY id, date, eom) AS prc_low_l1,
+                            LAG(prc_high) OVER (ORDER BY id, date, eom) AS prc_high_l1,
+                            LAG(prc) OVER (ORDER BY id, date, eom) AS prc_l1
+                            FROM __dsf2;""",
+            "query8":"""UPDATE __dsf3 
+                        SET prc_low_l1 = CASE WHEN id!=LAG(id) OVER (ORDER BY id, date, eom) THEN NULL ELSE prc_low_l1 END,
+                            prc_high_l1 = CASE WHEN id!=LAG(id) OVER (ORDER BY id, date, eom) THEN NULL ELSE prc_high_l1 END,
+                            prc_l1 = CASE WHEN id!=LAG(id) OVER (ORDER BY id, date, eom) THEN NULL ELSE prc_l1 END,
+                            retadj = CASE WHEN prc_l1<prc_low AND prc_l1>0 THEN 1 WHEN prc_l1 > prc_high AND prc_l1 > 0 THEN 2 ELSE retadj END,
+                            prc_high_t = CASE WHEN prc_l1<prc_low AND prc_l1>0 THEN prc_high - (prc_low - prc_l1) ELSE prc_high_t END,
+                            prc_low_t = CASE WHEN prc_l1<prc_low AND prc_l1>0 THEN prc_l1 ELSE prc_low_t END,
+                            prc_high_t = CASE WHEN prc_l1>prc_high AND prc_l1>0 THEN prc_l1 ELSE prc_high_t END,
+                            prc_low_t = CASE WHEN prc_l1>prc_high AND prc_l1>0 THEN prc_low + (prc_l1 - prc_high) ELSE prc_low_t END;""",
+            "query9":"""CREATE TABLE __dsf4 AS
+                        SELECT *, PI() AS pi, SQRT(8/PI()) AS k2, 3-2*SQRT(2) AS const, 
+                            GREATEST(prc_high_t, prc_high_l1) AS prc_high_2d,
+                            LEAST(prc_low_t, prc_low_l1) AS prc_low_2d,
+                            CASE WHEN prc_low_t>0 AND prc_low_l1>0 THEN POWER(LOG(prc_high_t/prc_low_t),2)+POWER(LOG(prc_high_l1/prc_low_l1),2)
+                                 ELSE NULL
+                            END AS beta,
+                            CASE WHEN prc_low_2d>0 THEN POWER(LOG(prc_high_2d/prc_low_2d),2)
+                                 ELSE NULL
+                            END AS gamma,
+                            (SQRT(2*beta)-SQRT(beta))/const-SQRT(gamma/const) AS alpha,
+                            2*(EXP(alpha)-1)/(1+EXP(alpha)) AS spread,
+                            CASE WHEN spread < 0 THEN 0
+                                 ELSE spread
+                            END AS spread_0,
+                            CASE WHEN spread IS NULL THEN NULL
+                                 ELSE spread
+                            END AS sigma,
+                            CASE WHEN sigma < 0 THEN 0 
+                                 ELSE sigma
+                            END AS sigma_0
+                            FROM __dsf3;""",
+            "query10":"""CREATE TABLE {out} AS
+                         SELECT id, eom, AVG(CASE WHEN spread_0 IS NOT NULL THEN spread_0 END) AS bidaskhl_21d, 
+                             AVG(CASE WHEN sigma_0 IS NOT NULL THEN sigma_0 END) AS rvolhl_21d
+                         FROM __dsf4
+                         GROUP BY id, eom
+                         HAVING COUNT(spread_0) > {__min_obs};""",
         },
 
 
@@ -1601,6 +1662,14 @@ class query_storage:
 
 
 
+        "market_chars_monthly":{
+            "query1":""" """,
+        },
+
+
+
+
+
 
         "market_returns": {
             "query1": """CREATE TABLE __common_stocks1 AS
@@ -1689,6 +1758,19 @@ class query_storage:
                             FROM chars{nums2} AS a
                             LEFT JOIN __ranks AS b 
                             ON a.id=b.id AND a.eom=b.eom;""",
+            "query4":"""CREATE TABLE __ranks AS
+                        SELECT excntry, id, eom, RANK() OVER (PARTITION BY excntry, eom ORDER BY {__v}) AS rank_{__v}
+                        FROM __subset;""",
+            "query5":"""CREATE TABLE {out} AS
+                        SELECT id, eom,
+                            CASE WHEN COUNT(*)-COUNT(rank_o_score)>{min_fcts} THEN NULL
+                                 ELSE (COALESCE(rank_o_score,0)+COALESCE(rank_ret_12_1,0)+COALESCE(rank_gp_at,0)+COALESCE(rank_niq_at,0))/(4-COUNT(*)+COUNT(rank_o_score))
+                            END AS mispricing_perf,
+                            CASE WHEN COUNT(*)-COUNT(rank_chcsho_12m)>{min_fcts} THEN NULL
+                                 ELSE (COALESCE(rank_chcsho_12m,0)+COALESCE(rank_eqnpo_12m,0)+COALESCE(rank_oaccruals_at,0)+COALESCE(rank_noa_at,0)+COALESCE(rank_at_gr1,0)+COALESCE(rank_ppeinv_gr1a,0))/(6-COUNT(*)+COUNT(rank_chcsho_12m))
+                            END AS mispricing_mgmt
+                            FROM __ranks
+                            GROUP BY id, eom;"""
         },
 
 
