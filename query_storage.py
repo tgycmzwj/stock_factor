@@ -1401,6 +1401,40 @@ class query_storage:
 
 
 
+        "finish_daily_chars":{
+            "query1":"""CREATE TABLE bidask AS
+                        SELECT id, eom, MAX(CASE WHEN stat = 'col1' THEN value END) AS value
+                        FROM corwin_schultz
+                        GROUP BY id, eom;""",
+            "query2":"""CREATE TABLE daily_chars1 AS
+                        SELECT *
+                        FROM roll_21d;""",
+            "query3":"""INSERT INTO daily_chars1
+                        SELECT *
+                        FROM roll_126d;""",
+            "query4":"""INSERT INTO daily_chars1
+                        SELECT *
+                        FROM roll_252d;""",
+            "query5":"""INSERT INTO daily_chars1
+                        SELECT *
+                        FROM roll_1260d;""",
+            "query6":"""INSERT INTO daily_chars1
+                        SELECT *
+                        FROM bidask;""",
+            "query7":"""CREATE TABLE daily_chars2 AS
+                        SELECT id, eom, MAX(CASE WHEN stat = 'value' THEN value END) AS value
+                        FROM daily_chars1
+                        GROUP BY id, eom;""",
+            "query8":"""CREATE TABLE daily_chars3 AS
+                        SELECT *, corr_1260d*rvol_252d/__mktvol_252d AS betabab_1260d, rmax5_21d/rvol_252d AS rmax5_rvol_21d
+                        FROM daily_chars2;""",
+        },
+
+
+
+
+
+
         "firms_age":{
             "query1":"""CREATE TABLE crsp_age1 AS
                         SELECT permco, MIN(date) AS crsp_first
@@ -1987,9 +2021,46 @@ class query_storage:
                          FROM calc_data_screen
                          GROUP BY id, calc_date;""",
             "query13":"""CREATE TABLE __capm2 AS 
-                         SELECT id, calc_date AS eom, mktrf AS beta&sfx., sqrt(_rmse_**2 * _edf_ / (_edf_ + 1)) as ivol_capm&sfx.
+                         SELECT id, calc_date AS eom, mktrf AS beta{sfx}, sqrt(_rmse_**2*_edf_/(_edf_+1)) AS ivol_capm{sfx}
                          FROM __capm1
-                         WHERE (_edf_+2)>={__min};"""
+                         WHERE (_edf_+2)>={__min};""",
+            "query14":"""CREATE TABLE __capm_ext1 AS
+                         SELECT id, calc_date AS eom,
+                             ((COUNT(*)*SUM(mktrf*ret_exc)-SUM(mktrf)*SUM(ret_exc))/(COUNT(*)*SUM(mktrf*mktrf)-SUM(mktrf)*SUM(mktrf))) AS beta,
+                             (AVG(ret_exc)-((COUNT(*)*SUM(mktrf*ret_exc)-SUM(mktrf)*SUM(ret_exc))/(COUNT(*)*SUM(mktrf*mktrf)-SUM(mktrf)*SUM(mktrf)))*AVG(mktrf)) AS alpha
+                         FROM calc_data_screen
+                         GROUP BY id, calc_date;""",
+            "query15":"""CREATE TABLE __capm_ext_res AS
+                         SELECT id, calc_date AS eom, ret_exc-alpha-beta*mktrf AS residual
+                         FROM calc_data_screen
+                         JOIN __capm_ext1 USING (id, calc_date);""",
+            "query16":"""CREATE TABLE __capm_ext2 AS 
+                         SELECT id, calc_date AS eom, mktrf AS beta{sfx}, SQRT(_rmse_**2*_edf_/(_edf_+1)) AS ivol_capm{sfx}
+                         FROM __capm_ext1
+                         WHERE (_edf_+2)>={__min};""",
+            "query17":"""CREATE TABLE __capm_ext_summary AS
+                         SELECT id, calc_date AS eom, COUNT(*) AS _freq_, AVG(residual) AS _mean_,
+                             SUM((residual-AVG(residual))*(residual-AVG(residual))) AS _variance_
+                         FROM __capm_ext_res
+                         GROUP BY id, calc_date;""",
+            "query18":"""SELECT id, calc_date AS eom, (3*SUM((residual-_mean_)*(residual-_mean_)*(residual-_mean_))/(_freq_*POWER(SQRT(_variance_),3))) AS iskew_capm{sfx}
+                         FROM __capm_ext_summary
+                         WHERE _freq_>={__min}
+                         GROUP BY id, calc_date;""",
+            "query19":"""CREATE TABLE __capm_ext_coskew1 AS 
+                         SELECT id,calc_date,res,mktrf-AVG(mktrf) AS mktrf_dm
+                         FROM __capm_ext_res
+                         GROUP BY id, calc_date;""",
+			"query20":"""CREATE TABLE  __capm_ext_coskew2 AS 
+	                     select id,calc_date,AVG(res*mktrf_dm**2)/(SQRT(AVG(res**2))*mean(mktrf_dm**2)) AS coskew{sfx}
+	                     FROM __capm_ext_coskew1
+	                     GROUP BY id, calc_date
+	                     HAVING COUNT(res)>={__min};""",
+            "query21":"""CREATE TABLE __capm_ext3 AS 
+                         SELECT a.*, b.iskew_capm{sfx}, c.coskew{sfx}
+                         FROM __capm_ext2 AS a
+                         LEFT JOIN __capm_ext_skew AS b ON a.id=b.id AND a.eom=b.calc_date
+                         LEFT JOIN __capm_ext_coskew2 AS c ON a.id=c.id AND a.eom=c.calc_date;"""
         },
 
 
