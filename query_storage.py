@@ -693,16 +693,41 @@ class query_storage:
                          SELECT * 
                          FROM pfs1
                          ORDER BY characteristic excntry {__date_col};""",
-            "query17":"""""",
+            "query17":"""CREATE TABLE pfs3 AS
+                         SELECT characteristic, excntry,
+                             SUBSTR(column_name, 1, INSTR(column_name, '_') - 1) AS size_pf,
+                             SUBSTR(column_name, INSTR(column_name, '_') + 1) AS char_pf,
+                             CAST(GROUP_CONCAT(ret_exc, '|') AS TEXT) AS ret_exc
+                         FROM (
+                             SELECT characteristic,excntry,size_pf || '_' || char_pf AS column_name,ret_exc
+                             FROM pfs2)
+                         GROUP BY characteristic, excntry, column_name;""",
             "query18":"""CREATE TABLE {out} AS 
                          SELECT characteristic, excntry, {__date_col}, 
                              (small_high+big_high)/2-(small_low+big_low)/2 AS lms, 
                              (small_high+small_mid+small_low)/3-(big_high+big_mid+big_low)/3 AS smb
                          FROM pfs3;
                          """,
+            "query19":"""CREATE TABLE hxz1 AS
+                         SELECT * 
+                         FROM asset_growth
+                         UNION
+                         SELECT *
+                         FROM roeq;""",
+            "query19_1":"""CREATE TABLE hxz2 AS 
+                           SELECT characteristic, excntry,
+                               MAX(CASE WHEN __date_col = 'lms' THEN lms END) AS lms,
+                               MAX(CASE WHEN __date_col = 'smb' THEN smb END) AS smb
+                           FROM hxz1
+                           GROUP BY characteristic, excntry;""",
             "query20":"""CREATE TABLE ff AS 
                          SELECT * 
                          FROM book_to_market;""",
+            "query21":"""CREATE TABLE hxz4 AS
+                         SELECT excntry, __date_col,
+                             MAX(CASE WHEN characteristic = 'col1' THEN col1 END) AS col1
+                         FROM hxz3
+                         GROUP BY excntry, __date_col;""",
             "query29":"""CREATE TABLE hxz AS 
                          SELECT *,(at_gr1_smb+niq_be_smb)/2 AS smb+hxz,-at_gr1_lms AS inv
                          FROM hxz4;""",
@@ -717,6 +742,20 @@ class query_storage:
 
 
 
+
+        "bidask_hl":{
+            "query1":"""CREATE TABLE __dsf1 AS 
+                        SELECT a.id, a.date, a.eom, a.bidask, a.tvol, 
+                            a.prc/a.adjfct AS prc, a.prc_high/a.adjfct AS prc_high, a.prc_low/a.adjfct AS prc_low
+		                FROM {data} AS a 
+		                LEFT JOIN market_returns_daily AS b
+		                ON a.excntry=b.excntry AND a.date=b.date
+		                WHERE b.mkt_vw_exc IS NOT NULL
+		                ORDER BY id, date;"""
+        },
+
+
+
         "clean_comp_msf": {
             "query1": """UPDATE {data}
     		                SET ret=NULL, ret_local=NULL, ret_exc=NULL
@@ -724,6 +763,25 @@ class query_storage:
             "query2": """update {data}
     		                SET ret=NULL, ret_local=NULL, ret_exc=NULL
     		                WHERE gvkey='013633' AND iid='01W' and eom IN ('28FEB1995'd);"""
+        },
+
+
+
+
+        "combine_ann_qtr_chars":{
+            "query1":"""CREATE TABLE __acc_chars1 AS
+                        SELECT a.*, b.*
+		                FROM {ann_data} AS a 
+		                LEFT JOIN {qtr_data} AS b
+		                ON a.gvkey=b.gvkey AND a.public_date=b.public_date;""",
+            "query2":"""CREATE TABLE __acc_chars2 AS
+                        SELECT *
+                        FROM __acc_chars1;""",
+            "query3":"""UPDATE __acc_chars2
+                        SET {ann_var}=
+                            CASE WHEN {ann_var} IS NULL OR ({qtr_var} IS NOT NULL AND datadate&{q_suffix}>datadate) THEN {qtr_var}
+                                 ELSE {ann_var}
+                            END;"""
         },
 
 
@@ -846,6 +904,65 @@ class query_storage:
             "query5_1": """DROP TABLE IF EXISTS __ex_country1;""",
             "query5_2": """DROP TABLE IF EXISTS __ex_country2;""",
             "query5_3": """DROP TABLE IF EXISTS __ex_country3;""",
+        },
+
+
+
+
+        "comp_hgics":{
+            "query1":"""CREATE TABLE gic1 AS
+                        SELECT DISTINCT gvkey, indfrom, indthru, gsubind AS gics
+                        FROM comp_{lib}
+		                WHERE gvkey IS NOT NULL
+		                ORDER BY gvkey,indfrom;""",
+            "query2":"""CREATE TABLE gic2 AS
+                        SELECT gvkey,indfrom,indthru,
+                            CASE WHEN gics IS NULL THEN -999
+                                 ELSE gics
+                            END AS gics,
+                            ROW_NUMBER() OVER(PARTITION BY gvkey ORDER BY indfrom DESC, indthru DESC) AS row_number
+                        FROM gic1;""",
+            "query3":"""CREATE TABLE gic3 AS
+                        SELECT gvkey,indthru,gics,
+                            CASE WHEN row_number=1 AND indthru IS NULL THEN '2022-12-31'
+                                 ELSE indthru
+                            END AS indthru
+                        FROM gic2;""",
+            "query4":"""CREATE TABLE gic4 AS
+                        SELECT *,INTCK_(indfrom,indthru,'day','discrete') AS gic_diff
+                        FROM gic3
+                        ORDER BY gvkey,indfrom,indthru;""",
+        },
+
+
+
+
+        "comp_industry":{
+            "query1":"""CREATE TABLE join1 AS
+                        SELECT *
+                        FROM comp_gics
+                        JOIN comp_other 
+                        ON comp_gics.gvkey = comp_other.gvkey AND comp_gics.date = comp_other.date
+                        ORDER BY gvkey,date;""",
+            "query2":"""CREATE TABLE join2 AS 
+                        SELECT *,LAG(date) OVER(PARTITION BY gvkey ORDER BY date) AS lag_date,
+                            INTNX_(date,-1,'day') AS date_1, 0 AS gap,
+                            ROW_NUMBER() OVER(PARTITION BY gvkey ORDER BY date) AS row_number
+                        FROM join1;""",
+            "query3":"""UPDATE join2
+                        SET gap=
+                            CASE WHEN row_number!=1 AND lagdate!=date_1 THEN 1
+                                 ELSE gap
+                            END;""",
+            "query4":"""CREATE TABLE gap1 AS
+                        SELECT *, INTCK_(lagdate,date,'day','discrete') AS diff
+		                FROM join3
+		                WHERE gap = 1;""",
+            "query7":"""CREATE TABLE joined1 AS 
+                        SELECT *
+                        FROM join1
+                        JOIN gap3 
+                        ON join1.gvkey = gap3.gvkey AND join1.date = gap3.date;"""
         },
 
 
@@ -1081,6 +1198,57 @@ class query_storage:
 
 
 
+        "earnings_persistence":{
+            "query1":"""CREATE TABLE __acc2 AS
+                        SELECT *, ROW_NUMBER() OVER (PARTITION BY gvkey, curcd) AS count
+                        FROM __acc1;""",
+            "query2":"""CREATE TABLE __acc3 AS 
+                        SELECT *, 
+                            CASE WHEN at_x>0 THEN ni_x/at_x 
+                                 ELSE NULL
+                            END AS __ni_at, 
+                            CASE WHEN count>12 THEN LAG(__ni_at,12) OVER(PARTITION BY gvkey) 
+                                 ELSE NULL
+                            END AS __ni_at_l1
+                        FROM __acc2;""",
+            "query3":"""CREATE TABLE __acc4 AS 
+                        SELECT gvkey, curcd, datadate, __ni_at, __ni_at_l1
+		                FROM __acc3
+		                WHERE __ni_at IS NOT NULL AND __ni_at_l1 IS NOT NULL;""",
+            "query4":"""CREATE TABLE month_ends AS 
+                        SELECT DISTINCT datadate
+                        FROM __acc4
+                        ORDER BY datadate;""",
+            "query5":"""CREATE TABLE dates_apply AS 
+                        SELECT *, mod(monotonic(), {__months}) AS grp
+		                FROM month_ends;""",
+            "query6":"""CREATE TABLE calc_dates AS
+			            SELECT a.datadate, b.datadate AS calc_date
+			            FROM dates_apply AS a 
+			            LEFT JOIN dates_apply(where=(grp={__grp})) AS b
+			            ON a.datadate>INTNX_("year",b.datadate,-{__n}, "e") AND a.datadate<=b.datadate AND month(a.datadate) = month(b.datadate);""",
+            "query7":"""CREATE TABLE calc_data AS 
+                        SELECT a.*, b.calc_date
+                        FROM __acc4 AS a 
+                        LEFT JOIN calc_dates AS b
+                        ON a.datadate = b.datadate
+                        WHERE b.calc_date IS NOT NULL
+			            GROUP BY a.gvkey, a.curcd, b.calc_date
+			            HAVING count(*) >= &__min.
+			            ORDER BY a.gvkey, b.calc_date;""",
+            "query8":""" """,
+            "query9":"""CREATE TABLE __earn_pers2 AS
+			            SELECT gvkey, curcd, calc_date AS datadate, __ni_at_l1 AS ni_ar1, sqrt(_rmse_**2*_edf_/(_edf_+1)) AS ni_ivol
+			            FROM __earn_pers1
+			            WHERE (_edf_ + 2) >= {__min};""",
+        },
+
+
+
+
+
+
+
 
 
         "ff_ind_class":{
@@ -1248,6 +1416,21 @@ class query_storage:
 
 
 
+        "hgics_join":{
+            "query1":"""CREATE TABLE gjoin1 AS
+                        SELECT a.gvkey AS na_gvkey, a.gics AS na_gics, a.date AS na_date, b.gvkey AS g_gvkey, b.gics AS g_gics, b.date AS g_date
+		                FROM na_hgics AS a 
+		                FULL JOIN g_hgics AS b 
+		                ON a.gvkey=b.gvkey AND a.date=b.date;""",
+            "query2":"""CREATE TABLE gjoin2 AS 
+                        SELECT *,coalesce(na_gvkey, g_gvkey) AS gvkey, coalesce(na_date, g_date) AS date, coalesce(na_gics, g_gics) AS gics
+                        FROM gjoin1;"""
+        },
+
+
+
+
+
 
         "market_returns": {
             "query1": """CREATE TABLE __common_stocks1 AS
@@ -1342,6 +1525,24 @@ class query_storage:
 
 
 
+        "nyse_size_cutoff":{
+            "query1":"""CREATE TABLE nyse_stocks AS
+                        SELECT *
+                        FROM your_table_name
+                        WHERE crsp_exchcd=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND common=1 AND me IS NOT NULL
+                        ORDER BY eom;""",
+            "query2":"""SELECT eom, COUNT(me) as n, 
+                            PERCENTILE_CONT(0.01) WITHIN GROUP (ORDER BY me) as nyse_p1,
+                            PERCENTILE_CONT(0.20) WITHIN GROUP (ORDER BY me) as nyse_p20,
+                            PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY me) as nyse_p50,
+                            PERCENTILE_CONT(0.80) WITHIN GROUP (ORDER BY me) as nyse_p80
+                        FROM nyse_stocks;"""
+        },
+
+
+
+
+
         "prepare_daily":{
             "query1":"""CREATE TABLE dsf1 AS 
                        SELECT a.excntry, a.id, a.date, a.eom, a.prc/a.adjfct AS prc_adj, 
@@ -1395,6 +1596,51 @@ class query_storage:
                          SELECT DISTINCT eom
                          FROM dsf1
                          ORDER BY eno;""",
+        },
+
+
+
+
+
+        "quarterize":{
+
+        },
+
+
+
+
+        "return_cutoffs":{
+            "query1":"""CREATE TABLE base AS 
+                        SELECT *, 
+                        FROM {data}
+                        WHERE source_crsp=1 AND common=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND excntry!='ZWE' AND ret_exc IS NOT NULL
+                        ORDER BY {date_var};""",
+            "query2":"""CREATE TABLE base AS 
+                        SELECT *
+                        FROM {data}
+                        where common=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND excntry!='ZWE' AND ret_exc IS NOT NULL
+                        ORDER BY {date_var};""",
+            "query3":"""CREATE TABLE cutoffs AS
+                        SELECT t1.{by_vars}, t1.{ret_type}, COUNT(*) AS n,
+                            PERCENTILE_CONT(0.001) WITHIN GROUP (ORDER BY t1.{ret_type}) AS {ret_type}_p1,
+                            PERCENTILE_CONT(0.01) WITHIN GROUP (ORDER BY t1.{ret_type}) AS {ret_type}_p10,
+                            PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY t1.{ret_type}) AS {ret_type}_p99,
+                            PERCENTILE_CONT(0.999) WITHIN GROUP (ORDER BY t1.{ret_type}) AS {ret_type}_p999
+                        FROM base AS t1
+                        GROUP BY t1.{by_vars};""",
+            "query4":"""CREATE TABLE {out} AS 
+                        SELECT *
+                        FROM cutoffs;""",
+            "query5":"""CREATE TABLE {out} AS
+		  			    SELECT a.*, b.{ret_type}_0_1, b.{ret_type}_1, b.{ret_type}_99, b.{ret_type}_99_9
+		  			    FROM {out} AS a
+		  			    LEFT JOIN cutoffs AS b
+		  			    ON a.eom=b.eom;""",
+            "query6":"""CREATE TABLE {out} AS
+		  			    SELECT a.*, b.{ret_type}_0_1, b.{ret_type}_1, b.{ret_type}_99, b.{ret_type}_99_9
+		  			    FROM {out} AS a
+		  			    LEFT JOIN cutoffs AS b
+		  			    ON a.year=b.year AND a.month=b.month;"""
         },
 
 
@@ -1458,7 +1704,56 @@ class query_storage:
 			             SELECT a.*, b.fx
 			             FROM {qname} AS a 
 			             LEFT JOIN fx AS b
-			             ON a.datadate=b.date AND a.curcdq=b.curcdd;"""
+			             ON a.datadate=b.date AND a.curcdq=b.curcdd;""",
+            "query13":"""CREATE TABLE {} AS 
+                         SELECT {}
+                         FROM {};""",
+            "query14":"""CREATE TABLE __compq3 AS 
+                         SELECT *
+                         FROM __compq2;""",
+            "query15":"""UPDATE __compq3_1
+                         SET {var}q=
+                             CASE WHEN {var}q IS NULL THEN {var}y_q
+                                  ELSE {var}q
+                             END;""",
+            "query16":"""CREATE TABLE __compq3_2 AS
+                         SELECT *, ibq AS ni_qtr, saleq AS sale_qtr, 
+                             coalesce(oancfq, ibq + dpq - coalesce(wcaptq, 0)) AS ocf_qtr, 
+                             {new_vars}
+                         FROM __compq3_1;""",
+            "query17":"""UPDATE __compq3_2 
+                         SET {var}_=
+                         CASE WHEN gvkey=LAG(gvkey,3) OVER(PARTITION BY gvkey) OR fyr=LAG(fyr,3) OVER(PARTITION BY gvkey) OR curcdq!=LAG(curcdq,3) OVER(PARTITION BY gvkey) OR fqtr+LAG(fqtr,1) OVER(PARTITION BY gvkey)+LAG(fqtr,2) OVER(PARTITION BY gvkey)+LAG(fqtr,3) OVER(PARTITION BY gvkey)!=10 THEN {var}+LAG({var},1) OVER(PARTITION BY gvkey)+LAG({var},2) OVER(PARTITION BY gvkey)+LAG({var},3) OVER(PARTITION BY gvkey)
+                              WHEN fqtr=4 THEN {var}_y
+                              ELSE NULL
+                         END;""",
+            "query18":"""CREATE TABLE __compq4_1 AS
+                         SELECT *,ROW_NUMBER OVER(PARITION BY gvkey ORDER BY datadate DESC) AS row_number
+                         FROM __compq3_2;""",
+            "query19":"""CREATE TABLE __compq4_2 AS
+                         SELECT *
+                         FROM __compq4_1
+                         WHERE row_number!=1;""",
+            "query20":"""CREATE TABLE __compa2 AS
+                         SELECT *, NULL AS ni_qtr, NULL AS sale_qtr, NULL AS ocf_qtr
+                         FROM __compa1;""",
+            "query21":"""CREATE TABLE __me_data AS
+                         SELECT DISTINCT gvkey, eom, me_company AS me_fiscal 
+		                 FROM {me_data}
+		                 WHERE gvkey IS NOT NULL AND primary_sec=1 AND me_company IS NOT NULL AND common=1 AND obs_main=1
+		                 GROUP BY gvkey, eom
+		                 HAVING me_company=MAX(me_company);""",
+            "query22":"""CREATE TABLE __compa3 AS
+                         SELECT a.*, b.me_fiscal
+		                 FROM __compa2 AS a 
+		                 LEFT JOIN __me_data AS b
+		                 ON a.gvkey=b.gvkey AND a.datadate=b.eom;""",
+            "query23":"""CREATE TABLE __compq5 AS
+                         SELECT a.*, b.me_fiscal
+		                 FROM __compq4 AS a 
+		                 LEFT JOIN __me_data AS b
+		                 ON a.gvkey = b.gvkey AND a.datadate = b.eom;"""
+
         },
 
 
@@ -1486,6 +1781,24 @@ class query_storage:
             "query4_2":"""DROP TABLE IF EXISTS {inset}_percentile;""",
             "query5_1":"""ALTER TABLE {outset} DROP COLUMN {var}_lower;""",
             "query5_2":"""ALTER TABLE {outset} DROP COLUMN {var}_higher;""",
-        }
+        },
+
+
+        "z_ranks":{
+            "query1":"""CREATE TABLE __subset AS 
+			            SELECT *
+			            FROM {data}
+			            GROUP BY excntry, eom
+			            HAVING count({var})>={min};""",
+            "query2":"""CREATE TABLE __ranks AS
+                        SELECT excntry, id, eom, RANK() OVER (PARTITION BY excntry, eom ORDER BY var) AS rank_var
+                        FROM __subset
+                        ORDER BY excntry, eom;""",
+            "query3":"""CREATE TABLE {out} AS 
+			            SELECT excntry, id, eom, (rank_{var}-mean(rank_{var}))/std(rank_{var}) as z_{var}
+			            FROM __ranks
+			            WHERE rank_{var} IS NOT NULL
+			            group by excntry, eom;"""
+        },
 
     }
