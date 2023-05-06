@@ -614,6 +614,34 @@ class query_storage:
 
 
 
+
+        "altman_z":{
+            "query1":"""CREATE TABLE {data}_temp1 AS 
+                        SELECT *,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE (ca_x-cl_x)/at_x
+                            END AS __z_wc,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE re / at_x
+                            END AS __z_re,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE ebitda_x/at_x
+                            END AS __z_eb,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE sale_x/at_x
+                            END AS __z_sa,
+                            CASE WHEN lt<=0 THEN NULL
+                                 ELSE me_fiscal/lt
+                            END AS __z_me,
+                            NULL AS {name}
+                        FROM {data};""",
+            "query2":"""UPDATE {data}_temp1
+                        SET {name}=1.2*__z_wc+1.4*__z_re+3.3*__z_eb+0.6*__z_me+1.0*__z_sa;""",
+        },
+
+
+
+
         "ap_factors":{
             "query1":"""CREATE TABLE world_sf1 AS
 			            SELECT excntry, id, date, eom, ret_exc
@@ -1437,6 +1465,106 @@ class query_storage:
 
 
 
+        "intrinsic_value":{
+            "query1":"""CREATE TABLE {data}_temp1 AS
+                        SELECT *,LAG(be_x,12) AS bex_l12
+                        FROM {data};""",
+            "query2":"""CREATE TABLE {data}_temp2 AS
+                        SELECT *,
+                            CASE WHEN nix_x<=0 THEN div_x/(at_x*0.06)
+                                 ELSE div_x/nix_x
+                            END AS __iv_po,
+                            CASE WHEN count<=12 OR (be_x+bex_l12)<=0 THEN NULL
+                                 ELSE nix_x/((be_x+bex_l12)/2)
+                            END AS __iv_roe,
+                            NULL AS __iv_be1, NULL AS {name}
+                        FROM {data}_temp2;""",
+            "query3":"""UPDATE {data}_temp2
+                        SET __iv_be1=(1+(1-__iv_po)*__iv_roe)*be_x;""",
+            "query4":"""UPDATE {data}_temp2
+                        SET {name}=be_x+(__iv_roe-{r})/(1+{r})*be_x+(__iv_roe-{r})/((1+{r})*{r})*__iv_be1;""",
+            "query5":"""UPDATE {data}_temp2
+                        SET {name}=
+                            CASE WHEN {name}<0 THEN NULL
+                            ELSE {name}
+                            END;""",
+        },
+
+
+
+
+        "kz_index":{
+            "query1":"""CREATE TABLE {data}_temp1 AS 
+                        SELECT *,LAG(ppent,12) AS ppent_l12
+                        FROM {data};""",
+            "query2":"""CREATE TABLE {data}_temp2 AS 
+                        SELECT *,
+                            CASE WHEN count<=12 OR ppent_l12<=0 THEN NULL 
+                                 ELSE (ni_x+dp)/ppent_l12
+                            END AS __kz_cf,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE (at_x+me_fiscal-be_x)/at_x
+                            END AS __kz_q,
+                            CASE WHEN (debt_x+seq_x)=0 THEN NULL
+                                 ELSE debt_x/(debt_x+seq_x)
+                            END AS __kz_db,
+                            CASE WHEN count<=12 OR ppent_l12<=0 THEN NULL
+                                 ELSE div_x/ppent_l12
+                            END AS __kz_dv,
+                            CASE WHEN count<=12 or ppent_l12<=0 THEN NULL
+                                 ELSE che/ppent_l12
+                            END AS __kz_cs,
+                            NULL AS {name}
+                        FROM {data}_temp1;""",
+            "query3":"""UPDATE {data}__temp2
+                        SET {name}=-1.002*__kz_cf+0.283*__kz_q+3.139*__kz_db-39.368*__kz_dv-1.315*__kz_cs;"""
+        },
+
+
+
+
+
+        "market_beta":{
+            "query1":"""CREATE TABLE __msf1 AS 
+                        SELECT a.id, a.eom, a.ret_exc, a.ret_lag_dif, b.mktrf
+		                FROM {data} AS a 
+		                LEFT JOIN {fcts} AS b
+		                ON a.excntry=b.excntry AND a.eom=b.eom
+		                WHERE a.ret_local!=0 AND a.ret_exc IS NOT NULL and a.ret_lag_dif=1 AND b.mktrf IS NOT NULL;""",
+            "query2":"""CREATE TABLE month_ends AS 
+                        SELECT DISTINCT eom
+		                FROM __msf2
+		                ORDER BY eom;""",
+            "query3":"""CREATE TABLE dates_apply AS 
+                        SELECT *, (ROW_NUMBER() OVER()-1) % {__n} AS grp 
+                        FROM month_ends;""",
+            "query4":"""create table calc_dates as
+			select a.eom, b.eom as calc_date
+			from dates_apply as a left join dates_apply(where=(grp = &__grp.)) as b
+			on a.eom > intnx("month", b.eom, -&__n., "e") and a.eom <= b.eom;""",
+            "query5":"""create table calc_data as 
+			select a.*, b.calc_date
+			from __msf2 as a left join calc_dates as b
+			on a.eom = b.eom
+			where not missing(b.calc_date)  
+			group by a.id, b.calc_date
+			having count(*) >= &__min.
+			order by a.id, b.calc_date;""",
+            "query6":"""CREATE TABLE __capm1 AS
+SELECT id, calc_date,
+       SUM(ret_exc * mktrf) / SUM(mktrf * mktrf) AS beta,
+       AVG(ret_exc) - AVG(mktrf) * SUM(ret_exc * mktrf) / SUM(mktrf * mktrf) AS alpha
+FROM calc_data
+GROUP BY id, calc_date;""",
+            "query7":"""create table __capm2 as 
+			select id, calc_date as eom, mktrf as beta_&__n.m, sqrt(_rmse_**2 * _edf_ / (_edf_ + 1)) as ivol_capm_&__n.m
+			from __capm1
+			where (_edf_ + 2) >= &__min.;"""
+        },
+
+
+
+
 
 
         "market_returns": {
@@ -1544,6 +1672,45 @@ class query_storage:
                             PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY me) as nyse_p50,
                             PERCENTILE_CONT(0.80) WITHIN GROUP (ORDER BY me) as nyse_p80
                         FROM nyse_stocks;"""
+        },
+
+
+
+
+
+        "ohlson_o":{
+            "query1":"""CREATE TABLE {name}_temp1 AS
+                        SELECT *,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE log(at_x)
+                            END AS __o_lat,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE debt_x/at_x
+                            END AS __o_lev,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE (ca_x-cl_x)/at_x
+                            END AS __o_wc,
+                            CASE WHEN at_x<=0 THEN NULL
+                                 ELSE nix_x / at_x
+                            END AS __o_roe,
+                            CASE WHEN ca_x<=0 THEN NULL
+                                 ELSE cl_x/ca_x
+                            END AS __o_cacl,
+                            CASE WHEN lt<=0 THEN NULL
+                                 ELSE (pi_x+dp)/lt
+                            END AS __o_ffo,
+                            CASE WHEN lt IS NULL OR at_x IS NULL THEN  NULL
+                                 ELSE lt>at_x
+                            END AS __o_neg_eq,
+                            CASE WHEN count<=12 OR nix_x IS NULL OR LAG(nix_x,12) IS NULL THEN NULL
+                                 ELSE (nix_x<0 AND LAG(nix_x,12)<0)
+                            END AS __o_neg_earn,
+                            CASE WHEN count<=12 OR (ABS(nix_x)+ABS(LAG(nix_x,12)))=0 IS NULL THEN NULL
+                                 ELSE (nix_x-LAG(nix_x,12))/ABS(nix_x)+ABS(LAG(nix_x,12)))
+                            END AS __o_nich,
+                        FROM {name};""",
+            "query2":"""UPDATE {data}_temp1
+                        SET {name}=-1.32-0.407*__o_lat+6.03*__o_lev+1.43*__o_wc+0.076*__o_cacl-1.72*__o_neg_eq-2.37*__o_roe-1.83*__o_ffo+0.285*__o_neg_earn-0.52*__o_nich;""",
         },
 
 
