@@ -771,6 +771,13 @@ class query_storage:
 
 
 
+        "apply_to_last_q":{
+            "query1":""""""
+        },
+
+
+
+
         "bidask_hl":{
             "query1":"""CREATE TABLE __dsf1 AS 
                         SELECT a.id, a.date, a.eom, a.bidask, a.tvol, 
@@ -841,6 +848,42 @@ class query_storage:
                          FROM __dsf4
                          GROUP BY id, eom
                          HAVING COUNT(spread_0) > {__min_obs};""",
+        },
+
+
+
+        "chg_to_assets":{
+            "query1":"""CREATE TABLE OutputTable AS
+                        SELECT *, CASE WHEN count <= {horizon} OR at_x <= 0 THEN NULL
+                                       ELSE ({var_gra}-LAG({var_gra}, {horizon}) OVER (ORDER BY id))/at_x 
+                                  AS {var_gra}_gr_{horizon}a
+                        FROM InputTable;"""
+        },
+
+
+
+        "chg_to_exp":{
+            "query1":"""CREATE TABLE OutputTable AS
+                        SELECT *, CASE WHEN count<=24 OR __expect<=0 THEN NULL
+                                       ELSE var_ce/__expect-1
+                                  END AS name_ce
+                        FROM (SELECT *, (lag(var_ce,12)+lag(var_ce,24))/2 AS __expect
+                              FROM InputTable) t;"""
+        },
+
+
+
+
+        "chg_var1_to_var2":{
+            "query1":"""WITH cte AS (
+                        SELECT *, CASE WHEN var2<=0 THEN NULL
+                                       ELSE (var1/var2)
+                                  END AS __x
+                        FROM InputTable)
+                        SELECT id, CASE WHEN count<={horizon} THEN NULL
+                                        ELSE (__x-LAG(__x,{horizon}) OVER (ORDER BY id))
+                                   END AS {name}
+                        FROM cte;"""
         },
 
 
@@ -1205,6 +1248,18 @@ class query_storage:
         		                       eqnpo_x/at_x AS eqnpo_at,
         		                       eqbb_x/at_x AS eqbb_at,
         		                       div_x/at_x AS div_at,
+        		                       
+        		                       oacc_x / at_x AS oaccruals_at,
+        		                       oacc_x / ABS(nix_x) AS oaccruals_ni,
+        		                       tacc_x / at_x AS taccruals_at,
+        		                       tacc_x / ABS(nix_x) AS taccruals_ni,
+        		                       noa_x / LAG(at_x, 12) AS noa_at,
+        		                       CASE WHEN count <= 12 OR LAG(at_x, 12)<=0 THEN NULL
+        		                            ELSE noa_x / LAG(at_x, 12)
+        		                       END AS noa_at,
+        		                       CASE WHEN ocf_x > 0 THEN fcf_x / ocf_x
+        		                            ELSE NULL
+        		                       END AS fcf_ocf,
 
         		                       be_x/bev_x AS be_bev,
         		                       debt_x/bev_x AS debt_bev,
@@ -1229,10 +1284,32 @@ class query_storage:
         		                       dltt/be_x AS debtlt_be,
         		                       opex_x/at_x AS opex_at,
         		                       nwc_x/at_x AS nwc_at,
+        		                       CASE WHEN ocf_x > 0 THEN fcf_x / ocf_x
+        		                            ELSE NULL
+        		                       END AS fcf_ocf,
 
         		                       debt_x/at_x AS debt_at,
         		                       debt_x/be_x AS debt_be,
-        		                       ebit_x/xint AS ebit_int
+        		                       ebit_x/xint AS ebit_int,
+        		                       
+        		                       
+        		                       xad/sale_x AS adv_sale,
+        		                       xlr/sale_x AS staff_sale,
+        		                       sale_x/bev_x AS sale_bev,
+        		                       xrd/sale_x AS rd_sale,
+        		                       sale_x/be_x AS sale_be,
+        		                       CASE WHEN COALESCE(nix_x,ni_x) > 0 THEN div_x/nix_x END AS div_ni,
+        		                       CASE WHEN nwc_x>0 THEN sale_x/nwc_x END AS sale_nwc,
+        		                       CASE WHEN pi_x>0 THEN txt/pi_x END AS tax_pi,
+        		                       
+        		                       
+        		                       CASE WHEN at_x<=0 THEN NULL ELSE che/at_x END AS cash_at,
+        		                       CASE WHEN emp<=0 THEN NULL ELSE ni_x/emp END AS ni_emp,
+        		                       CASE WHEN emp<=0 THEN NULL ELSE sale_x/emp END AS sale_emp,
+        		                       (sale_x/emp)/(LAG(sale_x/emp, 12) OVER ()-1) AS sale_emp_gr1,
+        		                       (emp-LAG(emp,12) OVER ()/(0.5*emp+0.5*LAG(emp,12) OVER ()) AS emp_gr1
+
+        		                       
                                 FROM __chars4;""",
         },
 
@@ -1663,7 +1740,27 @@ class query_storage:
 
 
         "market_chars_monthly":{
-            "query1":""" """,
+            "query1":"""CREATE TABLE __monthly_chars1 AS
+                        SELECT a.id, a.date, a.eom, a.me, a.shares, a.adjfct, 
+                            a.prc, a.ret, a.ret_local, a.&ret_var. as ret_x,  
+                            a.div_tot, a.div_cash, a.div_spc, a.dolvol,
+                            a.ret_lag_dif, (a.ret_local = 0) AS ret_zero, a.ret_exc, b.mkt_vw_exc											
+                        FROM {data} AS a 
+                        LEFT JOIN {market_ret} AS b
+                        ON a.excntry=b.excntry AND a.eom=b.eom
+                        ORDER BY a.id, a.eom;""",
+            "query2":"""CREATE TABLE __stock_coverage AS 
+                        SELECT id, MIN(eom) AS start_date, MAX(eom) AS end_date
+                        FROM __monthly_chars1
+                        GROUP BY id;""",
+            "query3":"""CREATE TABLE __monthly_chars2 AS
+                        SELECT a.id, a.eom, b.id IS NULL AS obs_miss, 
+                            b.me, b.shares, b.adjfct, b.prc, b.ret, b.ret_local, b.ret_x, b.ret_lag_dif,
+                            b.div_tot, b.div_cash, b.div_spc, b.dolvol, b.ret_zero, b.ret_exc, b.mkt_vw_exc
+                        FROM __full_range AS a 
+                        LEFT JOIN __monthly_chars1 AS b
+                        ON a.id=b.id AND a.eom=b.eom
+                        ORDER BY id, eom;"""
         },
 
 
@@ -1940,6 +2037,44 @@ class query_storage:
                          SELECT DISTINCT eom
                          FROM dsf1
                          ORDER BY eno;""",
+        },
+
+
+
+
+
+        "quality_minus_junk":{
+            "query1":"""create table qmj1 as 
+		select id, eom, excntry, coalesce(roeq_be_std*2, roe_be_std) as __evol, /* I multiply the quarterly measure by sqrt(4)=2 to reflect that quarterly measures are less volatile than the annual measure. Empirically, this seems to be a reasonable approximation although perhaps a slightly higher multiplied could be used e.g. 2.5*/
+			gp_at, ni_be, ni_at, ocf_at, gp_sale, oaccruals_at, gpoa_ch5, roe_ch5, roa_ch5, cfoa_ch5, 
+			gmar_ch5, betabab_1260d, debt_at, o_score, z_score
+		from &data.
+		where common=1 and primary_sec=1 and obs_main=1 and exch_main=1 and not missing(ret_exc) and not missing(me)
+		order by excntry, eom;""",
+            "query2":"""create table qmj%eval(&i.+1) as
+			select a.*, b.z_&__v.
+			from qmj&i. as a left join __z as b
+			on a.id=b.id and a.eom=b.eom;""",
+            "query4":"""CREATE TABLE qmj18 AS
+SELECT excntry, id, eom,
+       (z_gp_at + z_ni_be + z_ni_at + z_ocf_at + z_gp_sale + z_oaccruals_at) / 6 AS __prof,
+       (z_gpoa_ch5 + z_roe_ch5 + z_roa_ch5 + z_cfoa_ch5 + z_gmar_ch5) / 5 AS __growth,
+       (z_betabab_1260d + z_debt_at + z_o_score + z_z_score + z___evol) / 5 AS __safety
+FROM qmj17;""",
+            "query5":"""create table qmj19 as 
+		select a.excntry, a.id, a.eom, b.z___prof as qmj_prof, c.z___growth as qmj_growth, d.z___safety as qmj_safety
+		from qmj18 as a 
+		left join __prof as b on a.excntry=b.excntry and a.id=b.id and a.eom=b.eom
+		left join __growth as c on a.excntry=c.excntry and a.id=c.id and a.eom=c.eom
+		left join __safety as d on a.excntry=d.excntry and a.id=d.id and a.eom=d.eom;""",
+            "query6":"""CREATE TABLE qmj20 AS
+SELECT *,
+       (qmj_prof + qmj_growth + qmj_safety) / 3 AS __qmj
+FROM qmj19;""",
+            "query7":"""create table {out} as 
+		select a.excntry, a.id, a.eom, a.qmj_prof, a.qmj_growth, a.qmj_safety, b.z___qmj as qmj
+		from qmj20 as a left join __qmj as b 
+		on a.excntry=b.excntry and a.id=b.id and a.eom=b.eom;""",
         },
 
 
@@ -2297,6 +2432,14 @@ class query_storage:
 
 
 
+        "seasonality":{
+            "query1":""" """,
+        },
+
+
+
+
+
         "standardized_accounting_data":{
             "query1":"""SELECT DISTINCT LOWER(name) AS qvars_q
                         FROM pragma_table_info('COMP_FUNDQ') 
@@ -2405,6 +2548,23 @@ class query_storage:
 		                 ON a.gvkey = b.gvkey AND a.datadate = b.eom;"""
 
         },
+
+
+
+
+        "var_growth":{
+            "query1":"""CREATE TABLE OutputTable AS
+                        SELECT *, (var_gr/LAG(var_gr,{horizon}) OVER (PARTITION BY id ORDER BY eom)-1) AS name_gr
+                        FROM InputTable;""",
+            "query2":"""UPDATE OutputTable
+                        SET name_gr = NULL
+                        WHERE count<={horizon} OR LAG(var_gr,{horizon}) OVER (PARTITION BY id ORDER BY eom)<=0;""",
+        },
+
+
+
+
+
 
 
 
