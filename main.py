@@ -20,7 +20,7 @@ db=wrds.Connection(wrds_username=config.wrds_username)
 #db.create_pgpass_file()
 conn=sqlite3.connect(config.db)
 conn.enable_load_extension(True)
-conn.load_extension("./stats")
+conn.load_extension("./sqlean-linux-x86/stats")
 cursor=conn.cursor()
 query_bank=query_storage()
 
