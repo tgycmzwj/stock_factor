@@ -26,6 +26,8 @@ class query_storage:
                               SELECT value + 1 
                               FROM counter LIMIT (SELECT MAX({num}) FROM {table_in}))
                               SELECT * FROM {table_in} JOIN counter ON value <= {num}""",
+            "create_index":"""CREATE INDEX {index_name} ON {table_name}({column_name});""",
+            "drop_index":"""DROP INDEX {table_name}.{index_name};"""
         },
 
 
@@ -1306,10 +1308,13 @@ class query_storage:
         		                       CASE WHEN at_x<=0 THEN NULL ELSE che/at_x END AS cash_at,
         		                       CASE WHEN emp<=0 THEN NULL ELSE ni_x/emp END AS ni_emp,
         		                       CASE WHEN emp<=0 THEN NULL ELSE sale_x/emp END AS sale_emp,
-        		                       (sale_x/emp)/(LAG(sale_x/emp, 12) OVER ()-1) AS sale_emp_gr1,
-        		                       (emp-LAG(emp,12) OVER ()/(0.5*emp+0.5*LAG(emp,12) OVER ()) AS emp_gr1
+        		                       CASE WHEN count<=12 OR LAG(sale_emp,12)<=0 THEN NULL ELSE (sale_x/emp)/(LAG(sale_x/emp,12) OVER ()-1) END AS sale_emp_gr1,
+        		                       CASE WHEN count<=12 OR (emp-LAG(emp,12))=0 or (0.5*emp+0.5*lag12(emp))=0 THEN NULL ELSE (emp-LAG(emp,12) OVER ()/(0.5*emp+0.5*LAG(emp,12) OVER ()) END AS emp_gr1,
 
-        		                       
+        		                       CASE WHEN count<=12 OR LAG(at_x,12)<=0 THEN NULL ELSE op_x/LAG(at_x,12) OVER () END AS op_atl1,
+        		                       CASE WHEN count<=12 OR LAG(at_x,12)<=0 THEN NULL ELSE gp_x/LAG(at_x,12) OVER () END AS gp_atl1,
+        		                       CASE WHEN count<=12 OR LAG(be_x,12)<=0 THEN NULL ELSE ope_x/LAG(be_x,12) OVER () END AS ope_bel1,
+        		                       CASE WHEN count<=12 OR LAG(at_x,12)<=0 THEN NULL ELSE cop_x/LAG(at_x,12) OVER () END AS cop_atl1,
                                 FROM __chars4;""",
         },
 

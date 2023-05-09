@@ -75,6 +75,18 @@ class utils(object):
         self.cursor.fetchall()
         print("finishing duplicating records for table {} based on column {}".format(table_in,num))
 
+    def create_index(self,table_name,index_name,column_name):
+        query=self.query_bank["create_index"]
+        self.cursor.execute(query.format(table_name=table_name,index_name=index_name,column_name=column_name))
+        self.cursor.fetchall()
+        print("finishing creating index {} for table {} based on column {}".format(index_name,table_name,column_name))
+
+    def drop_index(self,table_name,index_name):
+        query=self.query_bank["drop_index"]
+        self.cursor.execute(query.format(table_name=table_name,index_name=index_name))
+        self.cursor.fetchall()
+        print("finishing dropping index {} for table {}".format(index_name,table_name))
+
 if __name__=="__main__":
     obj=utils()
     print("finished")
