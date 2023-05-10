@@ -13,6 +13,6 @@ def unify_datatype(conn,cursor):
             if column_name in ["gvkey","permno","permco"]:
                 util_funcs.change_column_type(table_name=table_name,column_name=column_name,column_type="Integer")
             # date to string
-            if re.match(column_name,".^date$"):
+            if re.match(".*date$",column_name):
                 util_funcs.change_column_type(table_name=table_name,column_name=column_name,column_type="TEXT")
 
