@@ -13,6 +13,7 @@ from query_storage import query_storage
 from prepare_crsp_sf import prepare_crsp_sf
 from prepare_comp_sf import prepare_comp_sf
 from helper_func import prepare_helper_func
+from unify_datatype import unify_datatype
 
 #establish connection to sql
 config=macro_config()
@@ -27,6 +28,9 @@ query_bank=query_storage()
 
 # #download data
 # pull_raw_wrds(config.datasets,db,conn,cursor)
+
+# unify data type
+unify_datatype(conn,cursor)
 
 #define additional helper function
 prepare_helper_func(conn)

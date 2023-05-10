@@ -32,6 +32,8 @@ class query_storage:
                                     SELECT *, CAST ({column_name} AS {column_type}) AS {column_name}_new
                                     FROM {table_name};""",
             "list_index":"""SELECT * FROM sqlite_master WHERE type='index';""",
+            "list_table":"""SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;""",
+            "list_column":"""PRAGMA table_info({table_name})"""
         },
 
 

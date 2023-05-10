@@ -99,7 +99,20 @@ class utils(object):
     def list_index(self):
         query=self.query_bank["list_index"]
         self.cursor.execute(query)
-        print(self.cursor.fetchall())
+        return self.cursor.fetchall()
+
+
+    def list_table(self):
+        query=self.query_bank["list_table"]
+        self.cursor.execute(query)
+        results=self.cursor.fetchall()
+        return [item[0] for item in results]
+
+    def list_column(self,table_name):
+        query=self.query_bank["list_column"]
+        self.cursor.execute(query.format(table_name=table_name))
+        results=self.cursor.fetchall()
+        return [item[1] for item in results]
 
 
 if __name__=="__main__":
