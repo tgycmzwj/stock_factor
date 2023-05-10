@@ -36,10 +36,11 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     #                           ["__firm_shares2","n"],["__firm_shares2","value"],["__firm_shares2","following_new"]])
 
     #query5
-    util_funcs.create_index(table_name='comp_secd',index_name='idx1',column_name='gvkey,datadate')
-    util_funcs.create_index(table_name='__firm_shares2',index_name='idx2',column_name='gvkey,ddate')
     util_funcs.change_column_type(table_name="__firm_shares2",column_name="gvkey",column_type="Integer")
     util_funcs.change_column_type(table_name="__firm_shares2",column_name="datadate",column_type="Integer")
+    util_funcs.create_index(table_name='__firm_shares2',index_name='idx2',column_name='gvkey,ddate')
+    util_funcs.create_index(table_name='comp_secd',index_name='idx1',column_name='gvkey,datadate')
+
 
     cursor.execute(queries["query5"])
     cursor.fetchall()

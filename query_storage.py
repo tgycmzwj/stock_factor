@@ -31,6 +31,7 @@ class query_storage:
             "change_column_type":"""CREATE TABLE {table_name}_new AS 
                                     SELECT *, CAST ({column_name} AS {column_type}) AS {column_name}_new
                                     FROM {table_name};""",
+            "list_index":"""SELECT * FROM sqlite_master WHERE type='index';""",
         },
 
 

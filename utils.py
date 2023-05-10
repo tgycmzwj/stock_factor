@@ -96,6 +96,11 @@ class utils(object):
         self.delete_column([[table_name,column_name]])
         self.rename_column([[table_name,column_name+"_new",column_name]])
 
+    def list_index(self):
+        query=self.query_bank["list_index"]
+        self.cursor.execute(query)
+        self.cursor.fetchall()
+
 
 if __name__=="__main__":
     obj=utils()
