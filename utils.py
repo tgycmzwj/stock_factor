@@ -81,11 +81,11 @@ class utils(object):
         self.cursor.fetchall()
         print("finishing creating index {} for table {} based on column {}".format(index_name,table_name,column_name))
 
-    def drop_index(self,table_name,index_name):
+    def drop_index(self,index_name):
         query=self.query_bank["drop_index"]
-        self.cursor.execute(query.format(table_name=table_name,index_name=index_name))
+        self.cursor.execute(query.format(index_name=index_name))
         self.cursor.fetchall()
-        print("finishing dropping index {} for table {}".format(index_name,table_name))
+        print("finishing dropping index {}".format(index_name))
 
     def change_column_type(self,table_name,column_name,column_type):
         query=self.query_bank["change_column_type"]
