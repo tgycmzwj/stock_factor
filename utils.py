@@ -87,6 +87,16 @@ class utils(object):
         self.cursor.fetchall()
         print("finishing dropping index {} for table {}".format(index_name,table_name))
 
+    def change_column_type(self,table_name,column_name,column_type):
+        query=self.query_bank["change_column_type"]
+        self.cursor.execute(query.format(table_name=table_name,column_name=column_name,column_type=column_type))
+        self.cursor.fetchall()
+        self.delete_table([table_name])
+        self.rename_table([[table_name+"_new",table_name]])
+        self.delete_column([[table_name,column_name]])
+        self.rename_column([[table_name,column_name+"_new",column_name]])
+
+
 if __name__=="__main__":
     obj=utils()
     print("finished")

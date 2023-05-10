@@ -27,7 +27,10 @@ class query_storage:
                               FROM counter LIMIT (SELECT MAX({num}) FROM {table_in}))
                               SELECT * FROM {table_in} JOIN counter ON value <= {num}""",
             "create_index":"""CREATE INDEX {index_name} ON {table_name}({column_name});""",
-            "drop_index":"""DROP INDEX {table_name}.{index_name};"""
+            "drop_index":"""DROP INDEX {table_name}.{index_name};""",
+            "change_column_type":"""CREATE TABLE {table_name}_new AS 
+                                    SELECT *, CAST ({column_name} AS {column_type}) AS {column_name}_new
+                                    FROM {table_name};""",
         },
 
 
