@@ -99,7 +99,7 @@ class utils(object):
     def list_index(self):
         query=self.query_bank["list_index"]
         self.cursor.execute(query)
-        self.cursor.fetchall()
+        print(self.cursor.fetchall())
 
 
 if __name__=="__main__":
