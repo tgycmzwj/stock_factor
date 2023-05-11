@@ -7,6 +7,7 @@ def unify_datatype(conn,cursor):
     all_tables=util_funcs.list_table()
 
     for table_name in all_tables:
+        print("unifying for table {}".format(table_name))
         all_columns=util_funcs.list_column(table_name=table_name)
         for column_name in all_columns:
             # gvkey to integer
@@ -15,4 +16,7 @@ def unify_datatype(conn,cursor):
             # date to string
             if re.match(".*date$",column_name):
                 util_funcs.change_column_type(table_name=table_name,column_name=column_name,column_type="TEXT")
+    print("finishing unifying for all tables")
+
+
 

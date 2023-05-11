@@ -24,7 +24,7 @@ class utils(object):
             self.cursor.execute(query.format(table_name=table,column_name=column))
             self.cursor.fetchall()
             self.conn.commit()
-            print("finished deleting column {} in table {}".format(table,column))
+            print("finished deleting column {} in table {}".format(column,table))
         print("finished deleting all columns")
 
     def rename_table(self,tables:List[List[str]]):

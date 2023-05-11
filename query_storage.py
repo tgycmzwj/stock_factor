@@ -1424,7 +1424,7 @@ class query_storage:
             "query9":"""CREATE TABLE __earn_pers2 AS
 			            SELECT gvkey, curcd, calc_date AS datadate, __ni_at_l1 AS ni_ar1, sqrt(_rmse_**2*_edf_/(_edf_+1)) AS ni_ivol
 			            FROM __earn_pers1
-			            WHERE (_edf_ + 2) >= {__min};""",
+			            WHERE (_edf_+2) >= {__min};""",
         },
 
 
@@ -1482,12 +1482,12 @@ class query_storage:
             "query2":"""CREATE TABLE {out} AS 
                         SELECT *,
                             CASE 
-                                WHEN (sic = 2048) OR (sic BETWEEN 100 AND 299) OR (sic BETWEEN 700 AND 799) 
+                                WHEN (sic=2048) OR (sic BETWEEN 100 AND 299) OR (sic BETWEEN 700 AND 799) 
                                     OR (sic BETWEEN 910 AND 919) THEN 1
                                 WHEN (sic IN (2095, 2098, 2099)) OR (sic BETWEEN 2000 AND 2046) OR (sic BETWEEN 2050 AND 2063) 
                                     OR (sic BETWEEN 2070 AND 2079) OR (sic BETWEEN 2090 AND 2092) THEN 2
                                 WHEN (sic IN (2086, 2087, 2096, 2097)) OR (sic BETWEEN 2064 AND 2068) THEN 3
-                                WHEN (sic = 2080) OR (sic BETWEEN 2082 AND 2085) THEN 4
+                                WHEN (sic=2080) OR (sic BETWEEN 2082 AND 2085) THEN 4
                                 WHEN (sic BETWEEN 2100 AND 2199) THEN 5
                                 WHEN (sic IN (3732, 3930, 3931)) OR (sic BETWEEN 920 AND 999) OR (sic BETWEEN 3650 AND 3652) 
                                     OR (sic BETWEEN 3940 AND 3949) THEN 6
@@ -1500,47 +1500,47 @@ class query_storage:
                                 WHEN (sic IN (3693, 3850, 3851)) OR (sic BETWEEN 3840 AND 3849) THEN 12
                                 WHEN (sic IN (2830, 2831)) OR (sic BETWEEN 2833 AND 2836) THEN 13
                                 WHEN (sic BETWEEN 2800 AND 2829) OR (sic BETWEEN 2850 AND 2879) OR (sic BETWEEN 2890 AND 2899) THEN 14
-                                when (sic in (3031, 3041)) or (sic BETWEEN 3050 AND 3053) or (sic BETWEEN 3060 AND 3099) then 15
-                                when (sic BETWEEN 2200 AND 2284) or (sic BETWEEN 2290 AND 2295) or (sic BETWEEN 2297 AND 2299) or (sic BETWEEN 2393 AND 2395) or (sic BETWEEN 2397 AND 2399) then 16
-                                when (sic in (2660, 2661, 3200, 3210, 3211, 3240, 3241, 3261, 3264, 3280, 3281, 3446, 3996)) or 
-                                    (sic BETWEEN 800 AND 899) or (sic BETWEEN 2400 AND 2439) or (sic BETWEEN 2450 AND 2459) or (sic BETWEEN 2490 AND 2499) or 
-                                    (sic BETWEEN 2950 AND 2952) or (sic BETWEEN 3250 AND 3259) or (sic BETWEEN 3270 AND 3275) or (sic BETWEEN 3290 AND 3293) or 
-                                    (sic BETWEEN 3295 AND 3299) or (sic BETWEEN 3420 AND 3429) or (sic BETWEEN 3430 AND 3433) or (sic BETWEEN 3440 AND 3442) or 
-                                    (sic BETWEEN 3448 AND 3452) or (sic BETWEEN 3490 AND 3499) then 17
-                                when (sic BETWEEN 1500 AND 1511) or (sic BETWEEN 1520 AND 1549) or (sic BETWEEN 1600 AND 1799) then 18
-                                when (sic = 3300) or (sic BETWEEN 3310 AND 3317) or (sic BETWEEN 3320 AND 3325) or (sic BETWEEN 3330 AND 3341) or (sic BETWEEN 3350 AND 3357) or (sic BETWEEN 3360 AND 3379) or (sic BETWEEN 3390 AND 3399) then 19
-                                when (sic in (3400, 3443, 3444)) or (sic BETWEEN 3460 AND 3479) then 20
-                                when (sic in (3538, 3585, 3586)) or (sic BETWEEN 3510 AND 3536) or (sic BETWEEN 3540 AND 3569) or (sic BETWEEN 3580 AND 3582) or (sic BETWEEN 3589 AND 3599 then 21
-					            when (sic in (3600, 3620, 3621, 3648, 3649, 3660, 3699)) or (sic BETWEEN 3610 AND 3613) or (sic BETWEEN 3623 AND 3629) or (sic BETWEEN 3640 AND 3646 or (sic BETWEEN 3690 AND 3692) then 22
-					            when (sic in (2296, 2396, 3010, 3011, 3537, 3647, 3694, 3700, 3710, 3711, 3799)) or (sic BETWEEN 3713 AND 3716) or (sic BETWEEN 3790 AND 3792) then 23
-					            when (sic in (3720, 3721, 3728, 3729)) or (sic BETWEEN 3723 AND 3725) then 24
-					            when (sic in (3730, 3731)) or (sic BETWEEN 3740 AND 3743) then 25
-					            when (sic = 3795) or (sic BETWEEN 3760 AND 3769) or (sic BETWEEN 3480 AND 3489) then 26
-					            when (sic = 3795) or (sic BETWEEN 3760 AND 3769) or (sic BETWEEN 3480 AND 3489) then 26
-					            when (sic BETWEEN 1040 AND 1049) then 27
-					            when (sic BETWEEN 1000 AND 1039) or (sic BETWEEN 1050 AND 1119) or (sic BETWEEN 1400 AND 1499) then 28
-					            when (sic BETWEEN 1200 AND 1299) then 29
-					            when (sic in (1300, 1389)) or (sic BETWEEN 1310 AND 1339) or (sic BETWEEN 1370 AND 1382) or (sic BETWEEN 2900 AND 2912) or (sic BETWEEN 2990 AND 2999) then 30
-					            when (sic in (4900, 4910, 4911, 4939)) or (sic BETWEEN 4920 AND 4925) or (sic BETWEEN 4930 AND 4932 or (sic BETWEEN 4940 AND 4942) then 31
-					            when (sic in (4800, 4899)) or (sic BETWEEN 4810 AND 4813) or (sic BETWEEN 4820 AND 4822) or (sic BETWEEN 4830 AND 4841) or (sic BETWEEN 4880 AND 4892) then 32
-					            when (sic in (7020, 7021, 7200, 7230, 7231, 7240, 7241, 7250, 7251, 7395, 7500, 7600, 7620, 7622, 7623, 7640, 7641)) or (sic BETWEEN 7030 AND 7033) or (sic BETWEEN 7210 AND 7212) or (sic BETWEEN 7214 AND 7217) or (sic BETWEEN 7219 AND 7221) or (sic BETWEEN 7260 AND 7299) or (sic BETWEEN 7520 AND 7549) or (sic BETWEEN 7629 AND 7631) or (sic BETWEEN 7690 AND 7699) or (sic BETWEEN 8100 AND 8499) or (sic BETWEEN 8600 AND 8699) or (sic BETWEEN 8800 AND 8899) or (sic BETWEEN 7510 AND 7515) then 33
-					            when (sic in (3993, 7218, 7300, 7374, 7396, 7397, 7399, 7519, 8700, 8720, 8721)) or (sic BETWEEN 2750 AND 2759) or (sic BETWEEN 7310 AND 7342) or (sic BETWEEN 7349 AND 7353) or (sic BETWEEN 7359 AND 7369) or (sic BETWEEN 7376 AND 7385) or (sic BETWEEN 7389 AND 7394) or (sic BETWEEN 8710 AND 8713) or (sic BETWEEN 8730 AND 8734) or (sic BETWEEN 8740 AND 8748) or (sic BETWEEN 8900 AND 8911) or (sic BETWEEN 8920 AND 8999) or (sic BETWEEN 4220 AND 4229) then 34
-					            when (sic = 3695) or (sic BETWEEN 3570 AND 3579) or (sic BETWEEN 3680 AND 3689) then 35
-					            when (sic = 7375) or (sic BETWEEN 7370 AND 7373) then 36
-					            when (sic in (3622, 3810, 3812)) or (sic BETWEEN 3661 AND 3666) or (sic BETWEEN 3669 AND 3679) then 37
-					            when (sic = 3811) or (sic BETWEEN 3820 AND 3827) or (sic BETWEEN 3829 AND 3839) then 38
-					            when (sic in (2760, 2761)) or (sic BETWEEN 2520 AND 2549) or (sic BETWEEN 2600 AND 2639) or (sic BETWEEN 2670 AND 2699) or (sic BETWEEN 3950 AND 3955) then 39
-					            when (sic in (3220, 3221)) or (sic BETWEEN 2440 AND 2449) or (sic BETWEEN 2640 AND 2659) or (sic BETWEEN 3410 AND 3412) then 40
-					            when (sic in (4100. 4130, 4131, 4150, 4151, 4230, 4231, 4780, 4789)) or (sic BETWEEN 4000 AND 4013) or (sic BETWEEN 4040 AND 4049) or (sic BETWEEN 4110 AND 4121) or (sic BETWEEN 4140 AND 4142) or (sic BETWEEN 4170 AND 4173) or (sic BETWEEN 4190 AND 4200) or (sic BETWEEN 4210 AND 4219) or (sic BETWEEN 4240 AND 4249) or (sic BETWEEN 4400 AND 4700) or (sic BETWEEN 4710 AND 4712) or (sic BETWEEN 4720 AND 4749) or (sic BETWEEN 4782 AND 4785) then 41
-					            when (sic in (5000, 5099, 5100)) or (sic BETWEEN 5010 AND 5015) or (sic BETWEEN 5020 AND 5023) or (sic BETWEEN 5030 AND 5060) or (sic BETWEEN 5063 AND 5065) or (sic BETWEEN 5070 AND 5078) or (sic BETWEEN 5080 AND 5088) or (sic BETWEEN 5090 AND 5094) or (sic BETWEEN 5110 AND 5113) or (sic BETWEEN 5120 AND 5122) or (sic BETWEEN 5130 AND 5172) or (sic BETWEEN 5180 AND 5182) or (sic BETWEEN 5190 AND 5199) then 42
-					            when (sic in (5200, 5250, 5251, 5260, 5261, 5270, 5271, 5300, 5310, 5311, 5320, 5330, 5331, 5334, 5900, 5999)) or (sic BETWEEN 5210 AND 5231) or (sic BETWEEN 5340 AND 5349) or (sic BETWEEN 5390 AND 5400) or (sic BETWEEN 5410 AND 5412) or (sic BETWEEN 5420 AND 5469) or (sic BETWEEN 5490 AND 5500) or (sic BETWEEN 5510 AND 5579) or (sic BETWEEN 5590 AND 5700) or (sic BETWEEN 5710 AND 5722) or (sic BETWEEN 5730 AND 5736) or (sic BETWEEN 5750 AND 5799) or (sic BETWEEN 5910 AND 5912) or (sic BETWEEN 5920 AND 5932) or (sic BETWEEN 5940 AND 5990) or (sic BETWEEN 5992 AND 5995) then 43 
-					            when (sic in (7000, 7213)) or (sic BETWEEN 5800 AND 5829) or (sic BETWEEN 5890 AND 5899) or (sic BETWEEN 7010 AND 7019) or (sic BETWEEN 7040 AND 7049) then 44
-					            when (sic = 6000) or (sic BETWEEN 6010 AND 6036) or (sic BETWEEN 6040 AND 6062) or (sic BETWEEN 6080 AND 6082) or (sic BETWEEN 6090 AND 6100) or (sic BETWEEN 6110 AND 6113) or (sic BETWEEN 6120 AND 6179) or (sic BETWEEN 6190 AND 6199) then 45
-					            when (sic in (6300, 6350, 6351, 6360, 6361)) or (sic BETWEEN 6310 AND 6331) or (sic BETWEEN 6370 AND 6379) or (sic BETWEEN 6390 AND 6411) then 46
-                                when (sic in (6500, 6510, 6540, 6541, 6610, 6611)) or (sic BETWEEN 6512 AND 6515) or (sic BETWEEN 6517 AND 6532) or (sic BETWEEN 6550 AND 6553) or (sic BETWEEN 6590 AND 6599) then 47
-					            when (sic in (6700, 6798, 6799)) or (sic BETWEEN 6200 AND 6299) or (sic BETWEEN 6710 AND 6726) or (sic BETWEEN 6730 AND 6733) or (sic BETWEEN 6740 AND 6779) or (sic BETWEEN 6790 AND 6795) then 48
-					            when (sic in (4970, 4971, 4990, 4991)) or (sic BETWEEN 4950 AND 4961) then 49
-					            else NULL
+                                WHEN (sic IN (3031, 3041)) OR (sic BETWEEN 3050 AND 3053) OR (sic BETWEEN 3060 AND 3099) THEN 15
+                                WHEN (sic BETWEEN 2200 AND 2284) OR (sic BETWEEN 2290 AND 2295) OR (sic BETWEEN 2297 AND 2299) OR (sic BETWEEN 2393 AND 2395) OR (sic BETWEEN 2397 AND 2399) THEN 16
+                                WHEN (sic IN (2660, 2661, 3200, 3210, 3211, 3240, 3241, 3261, 3264, 3280, 3281, 3446, 3996)) OR 
+                                    (sic BETWEEN 800 AND 899) OR (sic BETWEEN 2400 AND 2439) OR (sic BETWEEN 2450 AND 2459) OR (sic BETWEEN 2490 AND 2499) OR 
+                                    (sic BETWEEN 2950 AND 2952) OR (sic BETWEEN 3250 AND 3259) OR (sic BETWEEN 3270 AND 3275) OR (sic BETWEEN 3290 AND 3293) OR 
+                                    (sic BETWEEN 3295 AND 3299) OR (sic BETWEEN 3420 AND 3429) OR (sic BETWEEN 3430 AND 3433) OR (sic BETWEEN 3440 AND 3442) OR 
+                                    (sic BETWEEN 3448 AND 3452) OR (sic BETWEEN 3490 AND 3499) THEN 17
+                                WHEN (sic BETWEEN 1500 AND 1511) OR (sic BETWEEN 1520 AND 1549) OR (sic BETWEEN 1600 AND 1799) THEN 18
+                                WHEN (sic=3300) OR (sic BETWEEN 3310 AND 3317) OR (sic BETWEEN 3320 AND 3325) OR (sic BETWEEN 3330 AND 3341) OR (sic BETWEEN 3350 AND 3357) OR (sic BETWEEN 3360 AND 3379) OR (sic BETWEEN 3390 AND 3399) THEN 19
+                                WHEN (sic IN (3400, 3443, 3444)) OR (sic BETWEEN 3460 AND 3479) THEN 20
+                                WHEN (sic IN (3538, 3585, 3586)) OR (sic BETWEEN 3510 AND 3536) OR (sic BETWEEN 3540 AND 3569) OR (sic BETWEEN 3580 AND 3582) OR (sic BETWEEN 3589 AND 3599 WHEN 21
+					            WHEN (sic IN (3600, 3620, 3621, 3648, 3649, 3660, 3699)) OR (sic BETWEEN 3610 AND 3613) OR (sic BETWEEN 3623 AND 3629) OR (sic BETWEEN 3640 AND 3646 OR (sic BETWEEN 3690 AND 3692) THEN 22
+					            WHEN (sic IN (2296, 2396, 3010, 3011, 3537, 3647, 3694, 3700, 3710, 3711, 3799)) OR (sic BETWEEN 3713 AND 3716) OR (sic BETWEEN 3790 AND 3792) THEN 23
+					            WHEN (sic IN (3720, 3721, 3728, 3729)) OR (sic BETWEEN 3723 AND 3725) THEN 24
+					            WHEN (sic IN (3730, 3731)) OR (sic BETWEEN 3740 AND 3743) THEN 25
+					            WHEN (sic=3795) OR (sic BETWEEN 3760 AND 3769) OR (sic BETWEEN 3480 AND 3489) THEN 26
+					            WHEN (sic=3795) OR (sic BETWEEN 3760 AND 3769) OR (sic BETWEEN 3480 AND 3489) THEN 26
+					            WHEN (sic BETWEEN 1040 AND 1049) THEN 27
+					            WHEN (sic BETWEEN 1000 AND 1039) OR (sic BETWEEN 1050 AND 1119) or (sic BETWEEN 1400 AND 1499) THEN 28
+					            WHEN (sic BETWEEN 1200 AND 1299) THEN 29
+					            WHEN (sic IN (1300, 1389)) OR (sic BETWEEN 1310 AND 1339) OR (sic BETWEEN 1370 AND 1382) OR (sic BETWEEN 2900 AND 2912) OR (sic BETWEEN 2990 AND 2999) THEN 30
+					            WHEN (sic IN (4900, 4910, 4911, 4939)) OR (sic BETWEEN 4920 AND 4925) or (sic BETWEEN 4930 AND 4932 OR (sic BETWEEN 4940 AND 4942) THEN 31
+					            WHEN (sic IN (4800, 4899)) OR (sic BETWEEN 4810 AND 4813) OR (sic BETWEEN 4820 AND 4822) OR (sic BETWEEN 4830 AND 4841) OR (sic BETWEEN 4880 AND 4892) THEN 32
+					            WHEN (sic IN (7020, 7021, 7200, 7230, 7231, 7240, 7241, 7250, 7251, 7395, 7500, 7600, 7620, 7622, 7623, 7640, 7641)) OR (sic BETWEEN 7030 AND 7033) OR (sic BETWEEN 7210 AND 7212) OR (sic BETWEEN 7214 AND 7217) OR (sic BETWEEN 7219 AND 7221) OR (sic BETWEEN 7260 AND 7299) OR (sic BETWEEN 7520 AND 7549) OR (sic BETWEEN 7629 AND 7631) OR (sic BETWEEN 7690 AND 7699) OR (sic BETWEEN 8100 AND 8499) OR (sic BETWEEN 8600 AND 8699) OR (sic BETWEEN 8800 AND 8899) OR (sic BETWEEN 7510 AND 7515) THEN 33
+					            WHEN (sic IN (3993, 7218, 7300, 7374, 7396, 7397, 7399, 7519, 8700, 8720, 8721)) OR (sic BETWEEN 2750 AND 2759) OR (sic BETWEEN 7310 AND 7342) OR (sic BETWEEN 7349 AND 7353) OR (sic BETWEEN 7359 AND 7369) OR (sic BETWEEN 7376 AND 7385) OR (sic BETWEEN 7389 AND 7394) OR (sic BETWEEN 8710 AND 8713) OR (sic BETWEEN 8730 AND 8734) OR (sic BETWEEN 8740 AND 8748) OR (sic BETWEEN 8900 AND 8911) OR (sic BETWEEN 8920 AND 8999) OR (sic BETWEEN 4220 AND 4229) THEN 34
+					            WHEN (sic=3695) OR (sic BETWEEN 3570 AND 3579) OR (sic BETWEEN 3680 AND 3689) THEN 35
+					            WHEN (sic=7375) OR (sic BETWEEN 7370 AND 7373) THEN 36
+					            WHEN (sic IN (3622, 3810, 3812)) OR (sic BETWEEN 3661 AND 3666) OR (sic BETWEEN 3669 AND 3679) THEN 37
+					            WHEN (sic=3811) OR (sic BETWEEN 3820 AND 3827) OR (sic BETWEEN 3829 AND 3839) THEN 38
+					            WHEN (sic IN (2760, 2761)) OR (sic BETWEEN 2520 AND 2549) OR (sic BETWEEN 2600 AND 2639) OR (sic BETWEEN 2670 AND 2699) OR (sic BETWEEN 3950 AND 3955) THEN 39
+					            WHEN (sic IN (3220, 3221)) OR (sic BETWEEN 2440 AND 2449) OR (sic BETWEEN 2640 AND 2659) OR (sic BETWEEN 3410 AND 3412) THEN 40
+					            WHEN (sic IN (4100. 4130, 4131, 4150, 4151, 4230, 4231, 4780, 4789)) OR (sic BETWEEN 4000 AND 4013) OR (sic BETWEEN 4040 AND 4049) OR (sic BETWEEN 4110 AND 4121) OR (sic BETWEEN 4140 AND 4142) OR (sic BETWEEN 4170 AND 4173) OR (sic BETWEEN 4190 AND 4200) OR (sic BETWEEN 4210 AND 4219) OR (sic BETWEEN 4240 AND 4249) OR (sic BETWEEN 4400 AND 4700) OR (sic BETWEEN 4710 AND 4712) OR (sic BETWEEN 4720 AND 4749) OR (sic BETWEEN 4782 AND 4785) THEN 41
+					            WHEN (sic IN (5000, 5099, 5100)) OR (sic BETWEEN 5010 AND 5015) OR (sic BETWEEN 5020 AND 5023) OR (sic BETWEEN 5030 AND 5060) OR (sic BETWEEN 5063 AND 5065) OR (sic BETWEEN 5070 AND 5078) OR (sic BETWEEN 5080 AND 5088) OR (sic BETWEEN 5090 AND 5094) or (sic BETWEEN 5110 AND 5113) OR (sic BETWEEN 5120 AND 5122) OR (sic BETWEEN 5130 AND 5172) OR (sic BETWEEN 5180 AND 5182) OR (sic BETWEEN 5190 AND 5199) THEN 42
+					            WHEN (sic IN (5200, 5250, 5251, 5260, 5261, 5270, 5271, 5300, 5310, 5311, 5320, 5330, 5331, 5334, 5900, 5999)) OR (sic BETWEEN 5210 AND 5231) OR (sic BETWEEN 5340 AND 5349) OR (sic BETWEEN 5390 AND 5400) OR (sic BETWEEN 5410 AND 5412) OR (sic BETWEEN 5420 AND 5469) OR (sic BETWEEN 5490 AND 5500) OR (sic BETWEEN 5510 AND 5579) OR (sic BETWEEN 5590 AND 5700) OR (sic BETWEEN 5710 AND 5722) OR (sic BETWEEN 5730 AND 5736) OR (sic BETWEEN 5750 AND 5799) OR (sic BETWEEN 5910 AND 5912) OR (sic BETWEEN 5920 AND 5932) OR (sic BETWEEN 5940 AND 5990) OR (sic BETWEEN 5992 AND 5995) THEN 43 
+					            WHEN (sic IN (7000, 7213)) OR (sic BETWEEN 5800 AND 5829) OR (sic BETWEEN 5890 AND 5899) OR (sic BETWEEN 7010 AND 7019) OR (sic BETWEEN 7040 AND 7049) then 44
+					            WHEN (sic=6000) OR (sic BETWEEN 6010 AND 6036) OR (sic BETWEEN 6040 AND 6062) OR (sic BETWEEN 6080 AND 6082) OR (sic BETWEEN 6090 AND 6100) OR (sic BETWEEN 6110 AND 6113) OR (sic BETWEEN 6120 AND 6179) OR (sic BETWEEN 6190 AND 6199) THEN 45
+					            WHEN (sic IN (6300, 6350, 6351, 6360, 6361)) OR (sic BETWEEN 6310 AND 6331) OR (sic BETWEEN 6370 AND 6379) OR (sic BETWEEN 6390 AND 6411) THEN 46
+                                WHEN (sic IN (6500, 6510, 6540, 6541, 6610, 6611)) OR (sic BETWEEN 6512 AND 6515) OR (sic BETWEEN 6517 AND 6532) OR (sic BETWEEN 6550 AND 6553) OR (sic BETWEEN 6590 AND 6599) THEN 47
+					            WHEN (sic IN (6700, 6798, 6799)) OR (sic BETWEEN 6200 AND 6299) OR (sic BETWEEN 6710 AND 6726) OR (sic BETWEEN 6730 AND 6733) OR (sic BETWEEN 6740 AND 6779) OR (sic BETWEEN 6790 AND 6795) THEN 48
+					            WHEN (sic IN (4970, 4971, 4990, 4991)) OR (sic BETWEEN 4950 AND 4961) THEN 49
+					            ELSE NULL
 					        END AS ff49
 					    FROM {data}""",
         },
@@ -1552,7 +1552,7 @@ class query_storage:
 
         "finish_daily_chars":{
             "query1":"""CREATE TABLE bidask AS
-                        SELECT id, eom, MAX(CASE WHEN stat = 'col1' THEN value END) AS value
+                        SELECT id, eom, MAX(CASE WHEN stat='col1' THEN value END) AS value
                         FROM corwin_schultz
                         GROUP BY id, eom;""",
             "query2":"""CREATE TABLE daily_chars1 AS
@@ -2055,37 +2055,41 @@ class query_storage:
 
 
         "quality_minus_junk":{
-            "query1":"""create table qmj1 as 
-		select id, eom, excntry, coalesce(roeq_be_std*2, roe_be_std) as __evol, /* I multiply the quarterly measure by sqrt(4)=2 to reflect that quarterly measures are less volatile than the annual measure. Empirically, this seems to be a reasonable approximation although perhaps a slightly higher multiplied could be used e.g. 2.5*/
-			gp_at, ni_be, ni_at, ocf_at, gp_sale, oaccruals_at, gpoa_ch5, roe_ch5, roa_ch5, cfoa_ch5, 
-			gmar_ch5, betabab_1260d, debt_at, o_score, z_score
-		from &data.
-		where common=1 and primary_sec=1 and obs_main=1 and exch_main=1 and not missing(ret_exc) and not missing(me)
-		order by excntry, eom;""",
-            "query2":"""create table qmj%eval(&i.+1) as
-			select a.*, b.z_&__v.
-			from qmj&i. as a left join __z as b
-			on a.id=b.id and a.eom=b.eom;""",
+            "query1":"""CREATE TABLE qmj1 AS 
+		                SELECT id, eom, excntry, COALESCE(roeq_be_std*2, roe_be_std) AS __evol, 
+			                gp_at, ni_be, ni_at, ocf_at, gp_sale, oaccruals_at, gpoa_ch5, roe_ch5, roa_ch5, cfoa_ch5, 
+			                gmar_ch5, betabab_1260d, debt_at, o_score, z_score
+		                FROM {data}
+		                WHERE common=1 AND primary_sec=1 AND obs_main=1 AND exch_main=1 AND ret_exc IS NOT NULL and me IS NOT NULL
+		                ORDER BY excntry, eom;""",
+            "query2":"""CREATE TABLE qmj_{j} AS
+			            select a.*, b.z_{__v}
+			            FROM qmj{i} AS a 
+			            LEFT JOIN __z AS b
+			            ON a.id=b.id AND a.eom=b.eom;""",
             "query4":"""CREATE TABLE qmj18 AS
-SELECT excntry, id, eom,
-       (z_gp_at + z_ni_be + z_ni_at + z_ocf_at + z_gp_sale + z_oaccruals_at) / 6 AS __prof,
-       (z_gpoa_ch5 + z_roe_ch5 + z_roa_ch5 + z_cfoa_ch5 + z_gmar_ch5) / 5 AS __growth,
-       (z_betabab_1260d + z_debt_at + z_o_score + z_z_score + z___evol) / 5 AS __safety
-FROM qmj17;""",
-            "query5":"""create table qmj19 as 
-		select a.excntry, a.id, a.eom, b.z___prof as qmj_prof, c.z___growth as qmj_growth, d.z___safety as qmj_safety
-		from qmj18 as a 
-		left join __prof as b on a.excntry=b.excntry and a.id=b.id and a.eom=b.eom
-		left join __growth as c on a.excntry=c.excntry and a.id=c.id and a.eom=c.eom
-		left join __safety as d on a.excntry=d.excntry and a.id=d.id and a.eom=d.eom;""",
+                        SELECT excntry, id, eom,
+                           (z_gp_at+z_ni_be+z_ni_at+z_ocf_at+z_gp_sale+z_oaccruals_at)/6 AS __prof,
+                           (z_gpoa_ch5+z_roe_ch5+z_roa_ch5+z_cfoa_ch5+z_gmar_ch5)/5 AS __growth,
+                           (z_betabab_1260d+z_debt_at+z_o_score+z_z_score+z___evol)/5 AS __safety
+                        FROM qmj17;""",
+            "query5":"""CREATE TABLE qmj19 AS 
+		                SELECT a.excntry, a.id, a.eom, b.z___prof AS qmj_prof, c.z___growth AS qmj_growth, d.z___safety AS qmj_safety
+		                FROM qmj18 AS a 
+		                LEFT JOIN __prof AS b 
+		                ON a.excntry=b.excntry AND a.id=b.id AND a.eom=b.eom
+		                LEFT JOIN __growth AS c 
+		                ON a.excntry=c.excntry AND a.id=c.id AND a.eom=c.eom
+		                LEFT JOIN __safety AS d 
+		                ON a.excntry=d.excntry AND a.id=d.id AND a.eom=d.eom;""",
             "query6":"""CREATE TABLE qmj20 AS
-SELECT *,
-       (qmj_prof + qmj_growth + qmj_safety) / 3 AS __qmj
-FROM qmj19;""",
-            "query7":"""create table {out} as 
-		select a.excntry, a.id, a.eom, a.qmj_prof, a.qmj_growth, a.qmj_safety, b.z___qmj as qmj
-		from qmj20 as a left join __qmj as b 
-		on a.excntry=b.excntry and a.id=b.id and a.eom=b.eom;""",
+                        SELECT *, (qmj_prof+qmj_growth+qmj_safety)/3 AS __qmj
+                        FROM qmj19;""",
+            "query7":"""CREATE TABLE {out} AS 
+                        SELECT a.excntry, a.id, a.eom, a.qmj_prof, a.qmj_growth, a.qmj_safety, b.z___qmj AS qmj
+                        FROM qmj20 AS a 
+                        LEFT JOIN __qmj AS b 
+                        ON a.excntry=b.excntry AND a.id=b.id AND a.eom=b.eom;""",
         },
 
 
@@ -2158,7 +2162,7 @@ FROM qmj19;""",
             "query2":"""CREATE TABLE base AS 
                         SELECT *
                         FROM {data}
-                        where common=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND excntry!='ZWE' AND ret_exc IS NOT NULL
+                        WHERE common=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND excntry!='ZWE' AND ret_exc IS NOT NULL
                         ORDER BY {date_var};""",
             "query3":"""CREATE TABLE cutoffs AS
                         SELECT t1.{by_vars}, t1.{ret_type}, COUNT(*) AS n,
