@@ -11,7 +11,7 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # cursor.execute(queries["query1"].format(freq=freq))
     # cursor.fetchall()
     # print("finished query 1 at time "+time.asctime())
-    # util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
+    util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
 
     #query2
     cursor.execute(queries["query2"])
