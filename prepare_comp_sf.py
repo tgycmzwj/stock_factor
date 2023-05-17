@@ -11,34 +11,34 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # cursor.execute(queries["query1"].format(freq=freq))
     # cursor.fetchall()
     # print("finished query 1 at time "+time.asctime())
-    util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
-
-    #query2
-    cursor.execute(queries["query2"])
-    cursor.fetchall()
-    print("finished query 2 at time "+time.asctime())
-
-    #query3
-    cursor.execute(queries["query3"].format(freq=freq))
-    cursor.fetchall()
-    print("finished query 3 at time "+time.asctime())
-    util_funcs.delete_column([["__temp2","row_number"]])
-    util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n")
-
-    #query4
-    cursor.execute(queries["query4"].format(freq=freq))
-    cursor.fetchall()
-    conn.commit()
-    print("finished query 4 at time "+time.asctime())
-    util_funcs.sort_and_remove_duplicates(table_in="__temp4",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
-    util_funcs.delete_table(["__temp","__temp1","__temp2","__temp3","__temp4"])
-    util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
-                              ["__firm_shares2","n"],["__firm_shares2","value"],["__firm_shares2","following_new"]])
-
-    #query5
-    cursor.execute(queries["query5"])
-    cursor.fetchall()
-    print("finished query 5 at time " + time.asctime())
+    # util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
+    #
+    # #query2
+    # cursor.execute(queries["query2"])
+    # cursor.fetchall()
+    # print("finished query 2 at time "+time.asctime())
+    #
+    # #query3
+    # cursor.execute(queries["query3"].format(freq=freq))
+    # cursor.fetchall()
+    # print("finished query 3 at time "+time.asctime())
+    # util_funcs.delete_column([["__temp2","row_number"]])
+    # util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n")
+    #
+    # #query4
+    # cursor.execute(queries["query4"].format(freq=freq))
+    # cursor.fetchall()
+    # conn.commit()
+    # print("finished query 4 at time "+time.asctime())
+    # util_funcs.sort_and_remove_duplicates(table_in="__temp4",table_out="__firm_shares2",sortvar="gvkey,datadate,ddate",idvar="gvkey,datadate,ddate")
+    # util_funcs.delete_table(["__temp","__temp1","__temp2","__temp3","__temp4"])
+    # util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
+    #                           ["__firm_shares2","n"],["__firm_shares2","value"],["__firm_shares2","following_new"]])
+    #
+    # #query5
+    # cursor.execute(queries["query5"])
+    # cursor.fetchall()
+    # print("finished query 5 at time " + time.asctime())
 
     #query6
     cursor.execute(queries["query6"])

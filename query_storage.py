@@ -202,9 +202,9 @@ class query_storage:
             "query6":"""UPDATE __comp_dsf_na
 		                SET cshtrd =
 	                        CASE
-				                WHEN datadate<DATE('2001-02-01') THEN cshtrd/2
-				                WHEN datadate<=DATE('2001-12-31') THEN cshtrd/1.8
-				                WHEN datadate<DATE('2003-12-31') THEN cshtrd/1.6
+				                WHEN DATE(datadate)<DATE('2001-02-01') THEN cshtrd/2
+				                WHEN DATE(datadate)<=DATE('2001-12-31') THEN cshtrd/1.8
+				                WHEN DATE(datadate)<DATE('2003-12-31') THEN cshtrd/1.6
 				                ELSE cshtrd
 			                END
 		                WHERE exchg=14;""",
@@ -283,9 +283,9 @@ class query_storage:
 			"query16":"""UPDATE __comp_secm1
 				         SET cshtrm =
 					     CASE
-						     WHEN datadate<DATE('2001-02-01') then cshtrm/2
-						     WHEN datadate<=DATE('2001-12-31') then cshtrm/1.8
-						     WHEN datadate<DATE('2003-12-31') then cshtrm/1.6
+						     WHEN DATE(datadate)<DATE('2001-02-01') then cshtrm/2
+						     WHEN DATE(datadate)<=DATE('2001-12-31') then cshtrm/1.8
+						     WHEN DATE(datadate)<DATE('2003-12-31') then cshtrm/1.6
 						     ELSE cshtrm
 					     END
 				         WHERE exchg = 14;""",
