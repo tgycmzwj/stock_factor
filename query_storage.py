@@ -1164,7 +1164,8 @@ class query_storage:
                         ORDER BY curcdd,datadate DESC;""",
             "query4":"""CREATE TABLE __fx3 AS
                         SELECT *,datadate AS date,
-                            LAG(datadate) OVER(PARTITION BY curcdd ORDER BY datadate DESC) AS following
+                            LAG(datadate) OVER(PARTITION BY curcdd ORDER BY datadate DESC) AS following,
+                            NULL AS n
                         FROM __fx2;""",
             "query5":"""UPDATE __fx3
                         SET following=DATE(date,'+1 day')
