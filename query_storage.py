@@ -1162,7 +1162,7 @@ class query_storage:
                         SELECT * 
                         FROM __fx1
                         ORDER BY curcdd,datadate DESC;""",
-            "query4":"""CREATE TALE __fx3 AS
+            "query4":"""CREATE TABLE __fx3 AS
                         SELECT *,datadate AS date,
                             LAG(datadate) OVER(PARTITION BY curcdd ORDER BY datadate DESC) AS following
                         FROM __fx2;""",
