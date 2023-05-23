@@ -17,10 +17,6 @@ def compustat_fx(conn,cursor):
     cursor.execute(queries["query3"])
     cursor.fetchall()
     print("finished query 3 at time "+time.asctime())
-    #query3:
-    cursor.execute(queries["query3"])
-    cursor.fetchall()
-    print("finished query 3 at time "+time.asctime())
     #query4:
     cursor.execute(queries["query4"])
     cursor.fetchall()
