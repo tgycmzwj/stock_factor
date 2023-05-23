@@ -1,8 +1,10 @@
 import time
 import utils
+from query_storage import query_storage
 
-def prepare_crsp_sf(conn,cursor,queries,freq="m"):
+def prepare_crsp_sf(conn,cursor,freq="m"):
     util_funcs=utils.utils(conn,cursor)
+    queries = query_storage.query_bank["prepare_comp_sf"]
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
     #query1: create table __crsp_sf1

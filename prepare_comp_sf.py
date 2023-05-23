@@ -59,12 +59,12 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     # print("finished query 8 at time " + time.asctime())
     #
     #
-    compustat_fx(conn,cursor)
+    # compustat_fx(conn,cursor)
 
-    # #query9
-    # cursor.execute(queries["query9"])
-    # cursor.fetchall()
-    # print("finished query 9 at time " + time.asctime())
+    #query9
+    cursor.execute(queries["query9"])
+    cursor.fetchall()
+    print("finished query 9 at time " + time.asctime())
     #
     # #query10
     # cursor.execute(queries["query10"])

@@ -9,7 +9,6 @@ import sqlite3
 #project dependencies
 from macro_config import macro_config
 from pull_raw_wrds import pull_raw_wrds
-from query_storage import query_storage
 from prepare_crsp_sf import prepare_crsp_sf
 from prepare_comp_sf import prepare_comp_sf
 from helper_func import prepare_helper_func
@@ -23,7 +22,6 @@ conn=sqlite3.connect(config.db)
 conn.enable_load_extension(True)
 conn.load_extension("./sqlean-linux-x86/stats")
 cursor=conn.cursor()
-query_bank=query_storage()
 
 
 # #download data
@@ -36,12 +34,10 @@ query_bank=query_storage()
 prepare_helper_func(conn)
 
 # #process us data from crsp
-# queries=query_bank.query_bank["prepare_crsp_sf"]
-# prepare_crsp_sf(conn,cursor,queries,"m")
-# prepare_crsp_sf(conn,cursor,queries,"d")
+# prepare_crsp_sf(conn,cursor,"m")
+# prepare_crsp_sf(conn,cursor,"d")
 
 #process world data from compustat
-queries=query_bank.query_bank["prepare_comp_sf"]
 prepare_comp_sf(conn,cursor,"m")
 
 print("finished")

@@ -1174,16 +1174,6 @@ class query_storage:
                         SET n=JULIANDAY(following)-JULIANDAY(date);""",
             "query7":"""UPDATE __fx3
                         SET date=DATE(datadate,'+' || n || ' days');""",
-            "query8_1":"""ALTER TABLE __fx3 DROP COLUMN datadate;""",
-            "query8_2": """ALTER TABLE __fx3 DROP COLUMN following;""",
-            "query8_3": """ALTER TABLE __fx3 DROP COLUMN n;""",
-            "query9":"""CREATE TABLE {out} AS
-                        SELECT DISTINCT *
-                        FROM __fx3
-                        ORDER BY curcdd date;""",
-            "query10_1":"""DROP TABLE IF EXISTS __fx1;""",
-            "query10_2": """DROP TABLE IF EXISTS __fx2;""",
-            "query10_3": """DROP TABLE IF EXISTS __fx3;""",
         },
 
 
