@@ -36,7 +36,5 @@ def compustat_fx(conn,cursor):
     print("finished query 7 at time "+time.asctime())
     util_funcs.delete_column([["__fx3","datadate"],["__fx3","following"],["__fx3","n"]])
     #query9:
-    cursor.execute(queries["query9"])
-    cursor.fetchall()
-    print("finished query 9 at time "+time.asctime())
+    util_funcs.sort_and_remove_duplicates(table_in="__fx3",table_out="fx",sortvar="curcdd,date",idvar="curcdd,date")
     util_funcs.delete_table(["__fx1","__fx2","__fx3"])
