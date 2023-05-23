@@ -4,6 +4,7 @@ from query_storage import query_storage
 
 def compustat_fx(conn,cursor):
     queries=query_storage.query_bank["compustat_fx"]
+    print("Starting processing compustat_fx at time " + time.asctime())
     #query1:
     cursor.execute(queries["query1"])
     cursor.fetchall()

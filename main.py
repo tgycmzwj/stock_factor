@@ -42,6 +42,6 @@ prepare_helper_func(conn)
 
 #process world data from compustat
 queries=query_bank.query_bank["prepare_comp_sf"]
-prepare_comp_sf(conn,cursor,queries,"m")
+prepare_comp_sf(conn,cursor,"m")
 
 print("finished")
