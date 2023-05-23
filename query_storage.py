@@ -227,7 +227,7 @@ class query_storage:
 		                LEFT JOIN fx AS c
 			            ON a.curcddv=c.curcdd AND a.datadate=c.date;""",
             "query10":"""CREATE TABLE __comp_dsf3 AS 
-                         SELECT a.*, prc_local*fx AS prc, prc_high_lcl*fx AS prc_high, prc_low_lcl*fx AS prc_low,
+                         SELECT *, prc_local*fx AS prc, prc_high_lcl*fx AS prc_high, prc_low_lcl*fx AS prc_low,
                              prc_local*cshoc AS me, cshtrd*prc_local*fx AS dolvol, ri_local*fx AS ri,
                              COALESCE(div,0)*fx_div AS div_tot, COALESCE(divd,0)*fx_div AS div_cash,
                              COALESCE(divsp,0)*fx_div AS div_spc
