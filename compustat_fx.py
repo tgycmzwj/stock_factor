@@ -4,6 +4,7 @@ from query_storage import query_storage
 
 def compustat_fx(conn,cursor):
     queries=query_storage.query_bank["compustat_fx"]
+    util_funcs = utils.utils(conn, cursor)
     print("Starting processing compustat_fx at time " + time.asctime())
     #query1:
     cursor.execute(queries["query1"])
@@ -33,9 +34,9 @@ def compustat_fx(conn,cursor):
     cursor.execute(queries["query7"])
     cursor.fetchall()
     print("finished query 7 at time "+time.asctime())
-    utils.utils.delete_column([["__fx3","datadate"],["__fx3","following"],["__fx3","n"]])
+    util_funcs.delete_column([["__fx3","datadate"],["__fx3","following"],["__fx3","n"]])
     #query9:
     cursor.execute(queries["query9"])
     cursor.fetchall()
     print("finished query 9 at time "+time.asctime())
-    utils.utils.delete_table(["__fx1","__fx2","__fx3"])
+    util_funcs.delete_table(["__fx1","__fx2","__fx3"])
