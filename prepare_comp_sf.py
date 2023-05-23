@@ -39,11 +39,11 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # cursor.execute(queries["query5"])
     # cursor.fetchall()
     # print("finished query 5 at time " + time.asctime())
-
-    #query6
-    cursor.execute(queries["query6"])
-    cursor.fetchall()
-    print("finished query 6 at time " + time.asctime())
+    #
+    # #query6
+    # cursor.execute(queries["query6"])
+    # cursor.fetchall()
+    # print("finished query 6 at time " + time.asctime())
 
     #query7
     cursor.execute(queries["query7"])
