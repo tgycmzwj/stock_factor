@@ -65,17 +65,17 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     # cursor.execute(queries["query9"])
     # cursor.fetchall()
     # print("finished query 9 at time " + time.asctime())
-
-    #query10
-    cursor.execute(queries["query10"])
-    cursor.fetchall()
-    print("finished query 10 at time " + time.asctime())
     #
-    # #query11
-    # util_funcs.delete_column([["__comp_dsf3","div"],["__comp_dsf3","divd"],
-    #                           ["__comp_dsf3","divsp"],["__comp_dsf3","fx_div"],
-    #                           ["__comp_dsf3","curcddv"],["__comp_dsf3","prc_high_lcl"],
-    #                           ["__comp_dsf3","prc_low_lcl"]])
+    # #query10
+    # cursor.execute(queries["query10"])
+    # cursor.fetchall()
+    # print("finished query 10 at time " + time.asctime())
+    #
+    #query11
+    util_funcs.delete_column([["__comp_dsf3","div"],["__comp_dsf3","divd"],
+                              ["__comp_dsf3","divsp"],["__comp_dsf3","fx_div"],
+                              ["__comp_dsf3","curcddv"],["__comp_dsf3","prc_high_lcl"],
+                              ["__comp_dsf3","prc_low_lcl"]])
     #
     # #query11
     # cursor.execute(queries["query11"])
