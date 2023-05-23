@@ -60,16 +60,16 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     #
     #
     # compustat_fx(conn,cursor)
-
-    #query9
-    cursor.execute(queries["query9"])
-    cursor.fetchall()
-    print("finished query 9 at time " + time.asctime())
     #
-    # #query10
-    # cursor.execute(queries["query10"])
+    # #query9
+    # cursor.execute(queries["query9"])
     # cursor.fetchall()
-    # print("finished query 10 at time " + time.asctime())
+    # print("finished query 9 at time " + time.asctime())
+
+    #query10
+    cursor.execute(queries["query10"])
+    cursor.fetchall()
+    print("finished query 10 at time " + time.asctime())
     #
     # #query11
     # util_funcs.delete_column([["__comp_dsf3","div"],["__comp_dsf3","divd"],
