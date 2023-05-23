@@ -1,8 +1,11 @@
 import time
 import utils
+from compustat_fx import compustat_fx
+from query_storage import query_storage
 
 
-def prepare_comp_sf(conn,cursor,queries,freq="m"):
+def prepare_comp_sf(conn,cursor,freq="m"):
+    queries=query_storage.query_bank["prepare_comp_sf"]
     freq="month" if freq=="m" else "day"
     util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
@@ -50,12 +53,14 @@ def prepare_comp_sf(conn,cursor,queries,freq="m"):
     # cursor.fetchall()
     # print("finished query 7 at time " + time.asctime())
 
-    #query8
-    cursor.execute(queries["query8"])
-    cursor.fetchall()
-    print("finished query 8 at time " + time.asctime())
+    # #query8
+    # cursor.execute(queries["query8"])
+    # cursor.fetchall()
+    # print("finished query 8 at time " + time.asctime())
     #
     #
+    compustat_fx(conn,cursor)
+
     # #query9
     # cursor.execute(queries["query9"])
     # cursor.fetchall()
