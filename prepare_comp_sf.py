@@ -92,19 +92,21 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             freq_use="m"
 
         if freq_use=="m":
-            #query11
-            cursor.execute(queries["query11"])
+            # #query11
+            # cursor.execute(queries["query11"])
+            # cursor.fetchall()
+            # print("finished query 11 at time " + time.asctime())
+            #
+            # query12
+            cursor.execute(queries["query12"])
             cursor.fetchall()
-            print("finished query 11 at time " + time.asctime())
+            print("finished query 12 at time " + time.asctime())
 
 
 
 
-    # #query12
-    # cursor.execute(queries["query12"])
-    # cursor.fetchall()
-    # print("finished query 12 at time " + time.asctime())
-    #
+
+
     # #query13
     # util_funcs.delete_column([["__comp_msf2","cshtrd"],["__comp_msf2","div_tot"],
     #                           ["__comp_msf2","div_cash"],["__comp_msf2","div_spc"],
