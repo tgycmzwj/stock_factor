@@ -5,7 +5,6 @@ import re
 def unify_datatype(conn,cursor):
     util_funcs=utils.utils(conn,cursor)
     all_tables=util_funcs.list_table()
-    all_tables=['__firm_shares2']
     for table_name in all_tables:
         print("unifying for table {}".format(table_name))
         all_columns=util_funcs.list_column(table_name=table_name)

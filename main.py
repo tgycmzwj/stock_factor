@@ -34,7 +34,7 @@ class main():
         # pull_raw_wrds(config.datasets,db,conn,cursor)
 
         # #unify data type
-        unify_datatype(conn,cursor)
+        # unify_datatype(conn,cursor)
 
         # #define additional helper function
         prepare_helper_func(conn)
