@@ -7,7 +7,8 @@ from query_storage import query_storage
 def prepare_comp_sf(conn,cursor,freq="m"):
     queries=query_storage.query_bank["prepare_comp_sf"]
     freq="month" if freq=="m" else "day"
-    util_funcs = utils.utils(conn,cursor)
+    util_funcs=utils.utils(conn,cursor)
+    executor=utils.executor(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
     # #query1: create table __firm_shares1
@@ -16,19 +17,19 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     # print("finished query 1 at time "+time.asctime())
     # util_funcs.sort_and_remove_duplicates(table_in="__firm_shares1",table_out="__temp",sortvar="gvkey,datadate DESC",idvar="gvkey,datadate")
     #
-    # #query2
+    # #query2: create table __temp1
     # cursor.execute(queries["query2"])
     # cursor.fetchall()
     # print("finished query 2 at time "+time.asctime())
     #
-    # #query3
+    # #query3: create table __temp2
     # cursor.execute(queries["query3"].format(freq=freq))
     # cursor.fetchall()
     # print("finished query 3 at time "+time.asctime())
     # util_funcs.delete_column([["__temp2","row_number"]])
     # util_funcs.duplicate_records(table_in="__temp2",table_out="__temp3",num="n")
     #
-    # #query4
+    # #query4: crate table __temp4
     # cursor.execute(queries["query4"].format(freq=freq))
     # cursor.fetchall()
     # conn.commit()
@@ -38,36 +39,36 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     # util_funcs.delete_column([["__firm_shares2","following"],["__firm_shares2","forward_max"],
     #                           ["__firm_shares2","n"],["__firm_shares2","value"],["__firm_shares2","following_new"]])
     #
-    # #query5
+    # #query5: create table __comp_dsf_na
     # cursor.execute(queries["query5"])
     # cursor.fetchall()
     # print("finished query 5 at time " + time.asctime())
     #
-    # #query6
+    # #query6: update table __comp_dsf_na
     # cursor.execute(queries["query6"])
     # cursor.fetchall()
     # conn.commit()
     # print("finished query 6 at time " + time.asctime())
     #
-    # #query7
+    # #query7: create table __comp_dsf_global
     # cursor.execute(queries["query7"])
     # cursor.fetchall()
     # print("finished query 7 at time " + time.asctime())
 
-    # #query8
+    # #query8: create table __comp_dsf1
     # cursor.execute(queries["query8"])
     # cursor.fetchall()
     # print("finished query 8 at time " + time.asctime())
     #
-    #
+    # #helper: prepare exchange rate table
     # compustat_fx(conn,cursor)
     #
-    # #query9
+    # #query9: create table __comp_dsf2
     # cursor.execute(queries["query9"])
     # cursor.fetchall()
     # print("finished query 9 at time " + time.asctime())
     #
-    # #query10
+    # #query10: create table __comp_dsf3
     # cursor.execute(queries["query10"])
     # cursor.fetchall()
     # print("finished query 10 at time " + time.asctime())
@@ -93,17 +94,17 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             freq_use="m"
 
         if freq_use=="m":
-            # #query11
+            # #query11: create table __comp_msf1_temp
             # cursor.execute(queries["query11"])
             # cursor.fetchall()
             # print("finished query 11 at time " + time.asctime())
 
-            # # query12
+            # # query12: create table __comp_msf1
             # cursor.execute(queries["query12"])
             # cursor.fetchall()
             # print("finished query 12 at time " + time.asctime())
             #
-            # # query13
+            # # query13: create table __comp_msf2
             # cursor.execute(queries["query13"])
             # cursor.fetchall()
             # print("finished query13 at time "+time.asctime())
@@ -119,12 +120,12 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #                           ["__comp_msf2", "prc_highm", "prc_high"],
             #                           ["__comp_msf2", "prc_lowm", "prc_low"]])
             #
-            # #query14
+            # #query14: create table __comp_msf3
             # cursor.execute(queries["query14"])
             # cursor.fetchall()
             # print("finished query 14 at time " + time.asctime())
             #
-            #query15
+            #query15: create table __comp_secm1
             cursor.execute(queries["query15"])
             cursor.fetchall()
             print("finished query 15 at time " + time.asctime())

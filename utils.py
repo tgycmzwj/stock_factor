@@ -114,6 +114,17 @@ class utils(object):
         results=self.cursor.fetchall()
         return [item[1] for item in results]
 
+class executor(object):
+    def __init__(self,conn,cursor):
+        self.cursor=cursor
+        self.conn=conn
+        self.counter=0
+    def execute_and_commit(self,query):
+        self.cursor.execute(query)
+        self.conn.commit()
+        self.counter=self.counter+1
+        print("finished query{} at time {}".format(self.counter,time.asctime()))
+        return self.cursor.fetchall()
 
 if __name__=="__main__":
     obj=utils()

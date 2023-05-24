@@ -178,14 +178,14 @@ class query_storage:
                         WHERE indfmt='INDL' AND datafmt='STD' AND popsrc='D' AND consol='C' AND csho IS NOT NULL AND ajex IS NOT NULL;
                         """,
             "query2":"""CREATE TABLE __temp1 AS 
-                            SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
-                                ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
-                                INTNX_(CAST(datadate AS text),12,'month','end') AS forward_max
-                            FROM __temp;""",
+                        SELECT *,LAG(datadate) OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS following,
+                            ROW_NUMBER() OVER (PARTITION BY gvkey ORDER BY datadate DESC) AS row_number,
+                            INTNX_(CAST(datadate AS text),12,'month','end') AS forward_max
+                        FROM __temp;""",
             "query3":"""CREATE TABLE __temp2 AS 
-                          SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
-                              INTCK_(CAST(datadate AS text),CAST(MIN(COALESCE(following,'2200-01-01'),COALESCE(forward_max,'2200-01-01')) AS text),'{freq}','discrete') AS n
-                          FROM __temp1;""",
+                        SELECT *, CASE WHEN row_number=1 THEN NULL ELSE following END AS following_new,
+                            INTCK_(CAST(datadate AS text),CAST(MIN(COALESCE(following,'2200-01-01'),COALESCE(forward_max,'2200-01-01')) AS text),'{freq}','discrete') AS n
+                        FROM __temp1;""",
             "query4":"""CREATE TABLE __temp4 AS
                         SELECT *, INTNX_(CAST(datadate AS text),value-1,'{freq}','end') AS ddate
                         FROM __temp3
