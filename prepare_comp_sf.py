@@ -10,7 +10,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
-    # #query1
+    # #query1: create table __firm_shares1
     # cursor.execute(queries["query1"].format(freq=freq))
     # cursor.fetchall()
     # print("finished query 1 at time "+time.asctime())
@@ -119,15 +119,15 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #                           ["__comp_msf2", "prc_highm", "prc_high"],
             #                           ["__comp_msf2", "prc_lowm", "prc_low"]])
             #
-            #query14
-            cursor.execute(queries["query14"])
-            cursor.fetchall()
-            print("finished query 14 at time " + time.asctime())
-            #
-            # #query15
-            # cursor.execute(queries["query15"])
+            # #query14
+            # cursor.execute(queries["query14"])
             # cursor.fetchall()
-            # print("finished query 15 at time " + time.asctime())
+            # print("finished query 14 at time " + time.asctime())
+            #
+            #query15
+            cursor.execute(queries["query15"])
+            cursor.fetchall()
+            print("finished query 15 at time " + time.asctime())
             #
             # #query16
             # cursor.execute(queries["query16"])
