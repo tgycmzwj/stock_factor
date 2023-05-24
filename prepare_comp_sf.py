@@ -130,13 +130,11 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             # cursor.fetchall()
             # print("finished query 15 at time " + time.asctime())
             #
-            #query16: update table __comp_secm1
-            executor.execute_and_commit(queries["query16"])
-            # cursor.execute(queries["query16"])
-            # cursor.fetchall()
-            # print("finished query 16 at time " + time.asctime())
+            # #query16: update table __comp_secm1
+            # executor.execute_and_commit(queries["query16"])
             #
             # #query17
+            executor.execute_and_commit(queries["query17"])
             # cursor.execute(queries["query17"])
             # conn.commit()
             # cursor.fetchall()
