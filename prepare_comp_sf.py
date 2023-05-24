@@ -10,7 +10,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     util_funcs = utils.utils(conn,cursor)
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
-    # #query1:
+    # #query1
     # cursor.execute(queries["query1"].format(freq=freq))
     # cursor.fetchall()
     # print("finished query 1 at time "+time.asctime())
@@ -71,17 +71,35 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     # cursor.fetchall()
     # print("finished query 10 at time " + time.asctime())
     #
-    #query11
-    util_funcs.delete_column([["__comp_dsf3","div"],["__comp_dsf3","divd"],
-                              ["__comp_dsf3","divsp"],["__comp_dsf3","fx_div"],
-                              ["__comp_dsf3","curcddv"],["__comp_dsf3","prc_high_lcl"],
-                              ["__comp_dsf3","prc_low_lcl"]])
-    #
     # #query11
-    # cursor.execute(queries["query11"])
-    # cursor.fetchall()
-    # print("finished query 11 at time " + time.asctime())
+    # util_funcs.delete_column([["__comp_dsf3","div"],["__comp_dsf3","divd"],
+    #                           ["__comp_dsf3","divsp"],["__comp_dsf3","fx_div"],
+    #                           ["__comp_dsf3","curcddv"],["__comp_dsf3","prc_high_lcl"],
+    #                           ["__comp_dsf3","prc_low_lcl"]])
     #
+
+
+    if freq=="m" or freq=="d":
+        iter_max=1
+    else:
+        iter_max=2
+    for iter in range(iter_max):
+        if freq=="m" or freq=="d":
+            freq_use=freq
+        elif iter==1:
+            freq_use="d"
+        else:
+            freq_use="m"
+
+        if freq_use=="m":
+            #query11
+            cursor.execute(queries["query11"])
+            cursor.fetchall()
+            print("finished query 11 at time " + time.asctime())
+
+
+
+
     # #query12
     # cursor.execute(queries["query12"])
     # cursor.fetchall()

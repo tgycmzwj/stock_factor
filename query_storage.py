@@ -233,7 +233,7 @@ class query_storage:
                              COALESCE(divsp,0)*fx_div AS div_spc
                          FROM __comp_dsf2""",
             "query11":"""CREATE TABLE __comp_msf1 AS 
-                         SELECT *, date(datadate,'end of month') AS eom, 
+                         SELECT *, INTNX_(datadate,0,'month','end') AS eom, 
                              max(max(prc_high/ajexdi),max(prc/ajexdi))*ajexdi AS prc_highm, 
                              min(min(prc_low/ajexdi),min(prc/ajexdi))*ajexdi AS prc_lowm,
                              sum(div_tot/ajexdi)*ajexdi AS div_totm, 
