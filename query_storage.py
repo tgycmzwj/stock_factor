@@ -247,19 +247,6 @@ class query_storage:
                          FROM __comp_msf1
                          WHERE prc_local IS NOT NULL AND curcdd IS NOT NULL AND prcstd IN (3, 4, 10)
                          ORDER BY gvkey, iid, eom, datadate;""",
-            # "query13_1":"ALTER TABLE __comp_msf2 DROP COLUMN cshtrd;",
-            # "query13_2":"ALTER TABLE __comp_msf2 DROP COLUMN div_tot;",
-            # "query13_3":"ALTER TABLE __comp_msf2 DROP COLUMN div_cash;",
-            # "query13_4":"ALTER TABLE __comp_msf2 DROP COLUMN div_spc;",
-            # "query13_5":"ALTER TABLE __comp_msf2 DROP COLUMN dolvol;",
-            # "query13_6":"ALTER TABLE __comp_msf2 DROP COLUMN prc_high;",
-            # "query13_7":"ALTER TABLE __comp_msf2 DROP COLUMN prc_low;",
-            # "query13_8":"ALTER TABLE __comp_msf2 RENAME COLUMN div_totm TO div_tot",
-            # "query13_9": "ALTER TABLE __comp_msf2 RENAME COLUMN div_cashm TO div_cash",
-            # "query13_10": "ALTER TABLE __comp_msf2 RENAME COLUMN div_spcm TO div_spc",
-            # "query13_11": "ALTER TABLE __comp_msf2 RENAME COLUMN dolvolm TO dolvol",
-            # "query13_12": "ALTER TABLE __comp_msf2 RENAME COLUMN prc_highm TO prc_high",
-            # "query13_13": "ALTER TABLE __comp_msf2 RENAME COLUMN prc_lowm TO prc_low",
             "query14":"""CREATE TABLE __comp_msf3 AS 
                          SELECT * 
                          FROM __comp_msf2
