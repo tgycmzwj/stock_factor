@@ -232,8 +232,11 @@ class query_storage:
                              COALESCE(div,0)*fx_div AS div_tot, COALESCE(divd,0)*fx_div AS div_cash,
                              COALESCE(divsp,0)*fx_div AS div_spc
                          FROM __comp_dsf2""",
-            "query11":"""CREATE TABLE __comp_msf1 AS 
-                         SELECT *, INTNX_(datadate,0,'month','end') AS eom, 
+            "query11":"""CREATE TABLE __comp_msf1_temp AS 
+                         SELECT *, INTNX_(datadate,0,'month','end') AS eom
+                         FROM __comp_dsf3;""",
+            "query12":"""CREATE TABLE __comp_msf1 AS 
+                         SELECT *, 
                              max(max(prc_high/ajexdi),max(prc/ajexdi))*ajexdi AS prc_highm, 
                              min(min(prc_low/ajexdi),min(prc/ajexdi))*ajexdi AS prc_lowm,
                              sum(div_tot/ajexdi)*ajexdi AS div_totm, 
@@ -241,8 +244,9 @@ class query_storage:
                              sum(div_spc/ajexdi)*ajexdi AS div_spcm,
                              sum(cshtrd/ajexdi)*ajexdi AS cshtrm, 
                              sum(dolvol) AS dolvolm
-                         FROM __comp_dsf3;""",
-            "query12":"""CREATE TABLE __comp_msf2 AS 
+                         FROM __comp_msf1_temp
+                         GROUP BY gvkey,iid,eom;""",
+            "query13":"""CREATE TABLE __comp_msf2 AS 
                          SELECT * 
                          FROM __comp_msf1
                          WHERE prc_local IS NOT NULL AND curcdd IS NOT NULL AND prcstd IN (3, 4, 10)
