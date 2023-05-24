@@ -297,17 +297,6 @@ class query_storage:
                              prc_low*fx AS prc_low_new,prc*cshoc AS me,cshtrm*prc AS dolvol,ri_local*fx AS ri
                              dvpsxm*fx_div AS div_tot,NULL AS div_cash_new,NULL AS div_spc_new
                          FROM __comp_secm1;""",
-            # "query20_1":"ALTER TABLE __comp_secm2 DROP COLUMN dvpsxm",
-            # "query20_2": "ALTER TABLE __comp_secm2 DROP COLUMN fx_div",
-            # "query20_3": "ALTER TABLE __comp_secm2 DROP COLUMN curcddvm",
-            # "query20_4": "ALTER TABLE __comp_secm2 DROP COLUMN prc_high",
-            # "query20_5": "ALTER TABLE __comp_secm2 DROP COLUMN prc_low",
-            # "query20_6": "ALTER TABLE __comp_secm2 DROP COLUMN div_cash",
-            # "query20_7": "ALTER TABLE __comp_secm2 DROP COLUMN div_spc",
-            # "query20_8": "ALTER TABLE __comp_secm2 RENAME COLUMN prc_high_new TO prc_high",
-            # "query20_9": "ALTER TABLE __comp_secm2 RENAME COLUMN prc_low_new TO prc_low",
-            # "query20_10": "ALTER TABLE __comp_secm2 RENAME COLUMN div_cash_new TO div_cash",
-            # "query20_11": "ALTER TABLE __comp_secm2 RENAME COLUMN div_spc_new TO div_spc",
             "query21":"""CREATE TABLE __comp_msf4 AS
                          SELECT {common_vars},prcstd,'secd' AS source 
                          FROM __comp_msf3

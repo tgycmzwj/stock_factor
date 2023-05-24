@@ -113,56 +113,49 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #                           ["__comp_msf2", "dolvolm", "dolvol"],
             #                           ["__comp_msf2", "prc_highm", "prc_high"],
             #                           ["__comp_msf2", "prc_lowm", "prc_low"]])
-
-
-
-
-
-
-
-    #
-    # #query14
-    # cursor.execute(queries["query14"])
-    # cursor.fetchall()
-    # print("finished query 14 at time " + time.asctime())
-    #
-    # #query15
-    # cursor.execute(queries["query15"])
-    # cursor.fetchall()
-    # print("finished query 15 at time " + time.asctime())
-    #
-    # #query16
-    # cursor.execute(queries["query16"])
-    # cursor.fetchall()
-    # print("finished query 16 at time " + time.asctime())
-    #
-    # #query17
-    # cursor.execute(queries["query17"])
-    # conn.commit()
-    # cursor.fetchall()
-    # print("finished query 17 at time " + time.asctime())
-    #
-    # #query18
-    # cursor.execute(queries["query18"])
-    # conn.commit()
-    # cursor.fetchall()
-    # print("finished query 18 at time " + time.asctime())
-    #
-    # #query19
-    # cursor.execute(queries["query19"])
-    # cursor.fetchall()
-    # print("finished query 19 at time " + time.asctime())
-    #
-    # #query20
-    # util_funcs.delete_column([["__comp_secm2","dvpsxm"],["__comp_secm2","fx_div"],
-    #                           ["__comp_secm2","curcddvm"],["__comp_secm2","prc_high"],
-    #                           ["__comp_secm2","prc_low"],["__comp_secm2","div_cash"],
-    #                           ["__comp_secm2","div_spc"]])
-    # util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
-    #                           ["__comp_secm2","prc_low_new","prc_low"],
-    #                           ["__comp_secm2","div_cash_new","div_cash"],
-    #                           ["__comp_secm2","div_spc_new","div_spc"]])
-    #
+            #
+            # #query14
+            # cursor.execute(queries["query14"])
+            # cursor.fetchall()
+            # print("finished query 14 at time " + time.asctime())
+            #
+            # #query15
+            # cursor.execute(queries["query15"])
+            # cursor.fetchall()
+            # print("finished query 15 at time " + time.asctime())
+            #
+            # #query16
+            # cursor.execute(queries["query16"])
+            # cursor.fetchall()
+            # print("finished query 16 at time " + time.asctime())
+            #
+            # #query17
+            # cursor.execute(queries["query17"])
+            # conn.commit()
+            # cursor.fetchall()
+            # print("finished query 17 at time " + time.asctime())
+            #
+            # #query18
+            # cursor.execute(queries["query18"])
+            # conn.commit()
+            # cursor.fetchall()
+            # print("finished query 18 at time " + time.asctime())
+            #
+            # #query19
+            # cursor.execute(queries["query19"])
+            # cursor.fetchall()
+            # print("finished query 19 at time " + time.asctime())
+            #
+            # #query20
+            # util_funcs.delete_column([["__comp_secm2","dvpsxm"],["__comp_secm2","fx_div"],
+            #                           ["__comp_secm2","curcddvm"],["__comp_secm2","prc_high"],
+            #                           ["__comp_secm2","prc_low"],["__comp_secm2","div_cash"],
+            #                           ["__comp_secm2","div_spc"]])
+            # util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
+            #                           ["__comp_secm2","prc_low_new","prc_low"],
+            #                           ["__comp_secm2","div_cash_new","div_cash"],
+            #                           ["__comp_secm2","div_spc_new","div_spc"]])
+            #
     # #query21
     # cursor.execute(queries["query21"])
     # cursor.fetchall()
@@ -270,5 +263,4 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     #                          "__delist3","__comp_sf1","__comp_sf2",
     #                          "__comp_sf3","__comp_sf4","__comp_sf5",
     #                          "__comp_sf6","__exchanges"])
-    #
-    #
+
