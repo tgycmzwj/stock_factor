@@ -134,14 +134,10 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             # executor.execute_and_commit(queries["query16"])
             #
             # #query17
-            executor.execute_and_commit(queries["query17"])
-            # cursor.execute(queries["query17"])
-            # conn.commit()
-            # cursor.fetchall()
-            # print("finished query 17 at time " + time.asctime())
+            # executor.execute_and_commit(queries["query17"])
             #
             # #query18
-            # cursor.execute(queries["query18"])
+            executor.execute_and_commit(queries["query18"])
             # conn.commit()
             # cursor.fetchall()
             # print("finished query 18 at time " + time.asctime())
