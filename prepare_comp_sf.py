@@ -2,13 +2,14 @@ import time
 import utils
 from compustat_fx import compustat_fx
 from query_storage import query_storage
-
+from chars_config import chars_config
 
 def prepare_comp_sf(conn,cursor,freq="m"):
     queries=query_storage.query_bank["prepare_comp_sf"]
     freq="month" if freq=="m" else "day"
     util_funcs=utils.utils(conn,cursor)
     executor=utils.executor(conn,cursor)
+    char_collections=chars_config()
     print("Starting processing freq={freq} at time ".format(freq=freq) + time.asctime())
 
     # #query1: create table __firm_shares1
@@ -146,12 +147,12 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             # util_funcs.delete_column([["__comp_secm2","dvpsxm"],["__comp_secm2","fx_div"],
             #                           ["__comp_secm2","curcddvm"],["__comp_secm2","prc_high"],
             #                           ["__comp_secm2","prc_low"]])
-            util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
-                                      ["__comp_secm2","prc_low_new","prc_low"],
-                                      ["__comp_secm2","div_cash_new","div_cash"],
-                                      ["__comp_secm2","div_spc_new","div_spc"]])
-            #
-    # #query21
+            # util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
+            #                           ["__comp_secm2","prc_low_new","prc_low"],
+            #                           ["__comp_secm2","div_cash_new","div_cash"],
+            #                           ["__comp_secm2","div_spc_new","div_spc"]])
+            # #query21
+            executor.execute_and_commit(queries["query21"].format(",".join(char_collections.common_vars)))
     # cursor.execute(queries["query21"])
     # cursor.fetchall()
     # print("finished query 21 at time " + time.asctime())
