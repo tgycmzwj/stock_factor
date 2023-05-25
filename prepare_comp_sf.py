@@ -152,8 +152,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #                           ["__comp_secm2","div_cash_new","div_cash"],
             #                           ["__comp_secm2","div_spc_new","div_spc"]])
             # #query21
-            commons=queries["query21"].format(",".join(char_collections.common_vars))
-            executor.execute_and_commit(queries["query21"].format(",".join(char_collections.common_vars)))
+            executor.execute_and_commit(queries["query21"].format(common_vars=",".join(char_collections.common_vars)))
     # cursor.execute(queries["query21"])
     # cursor.fetchall()
     # print("finished query 21 at time " + time.asctime())
