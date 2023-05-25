@@ -138,25 +138,19 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #
             # #query18
             # executor.execute_and_commit(queries["query18"])
-            # conn.commit()
-            # cursor.fetchall()
-            # print("finished query 18 at time " + time.asctime())
             #
             # #query19
-            executor.execute_and_commit(queries["query19"])
-            # cursor.execute(queries["query19"])
-            # cursor.fetchall()
-            # print("finished query 19 at time " + time.asctime())
+            # executor.execute_and_commit(queries["query19"])
             #
             # #query20
-            # util_funcs.delete_column([["__comp_secm2","dvpsxm"],["__comp_secm2","fx_div"],
-            #                           ["__comp_secm2","curcddvm"],["__comp_secm2","prc_high"],
-            #                           ["__comp_secm2","prc_low"],["__comp_secm2","div_cash"],
-            #                           ["__comp_secm2","div_spc"]])
-            # util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
-            #                           ["__comp_secm2","prc_low_new","prc_low"],
-            #                           ["__comp_secm2","div_cash_new","div_cash"],
-            #                           ["__comp_secm2","div_spc_new","div_spc"]])
+            util_funcs.delete_column([["__comp_secm2","dvpsxm"],["__comp_secm2","fx_div"],
+                                      ["__comp_secm2","curcddvm"],["__comp_secm2","prc_high"],
+                                      ["__comp_secm2","prc_low"],["__comp_secm2","div_cash"],
+                                      ["__comp_secm2","div_spc"]])
+            util_funcs.rename_column([["__comp_secm2","prc_high_new","prc_high"],
+                                      ["__comp_secm2","prc_low_new","prc_low"],
+                                      ["__comp_secm2","div_cash_new","div_cash"],
+                                      ["__comp_secm2","div_spc_new","div_spc"]])
             #
     # #query21
     # cursor.execute(queries["query21"])
