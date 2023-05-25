@@ -159,44 +159,36 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #
             # #query23
             # util_funcs.sort_and_remove_duplicates(table_in="__comp_msf5",table_out="__comp_msf6",sortvar="gvkey,iid,eom",idvar="gvkey,iid,eom")
-            util_funcs.delete_table(["__comp_msf1","__comp_msf2","__comp_msf3","__comp_msf4","__comp_msf5","__comp_secm1","__comp_secm2"])
-    #
-    # #query24
-    # cursor.execute(queries["query24"])
-    # cursor.fetchall()
-    # print("finished query 24 at time " + time.asctime())
-    #
-    # #query25
-    # cursor.execute(queries["query25"])
-    # cursor.fetchall()
-    # print("finished query 25 at time " + time.asctime())
-    #
-    # #query26
-    # cursor.execute(queries["query26"])
-    # cursor.fetchall()
-    # print("finished query 26 at time " + time.asctime())
-    #
-    # #query27
-    # cursor.execute(queries["query27"])
-    # conn.commit()
-    # cursor.fetchall()
-    # print("finished query 27 at time " + time.asctime())
-    #
-    # #query28
-    # cursor.execute(queries["query28"])
-    # conn.commit()
-    # cursor.fetchall()
-    # print("finished query 28 at time " + time.asctime())
-    #
-    # #query29
-    # cursor.execute(queries["query29"])
-    # cursor.fetchall()
-    # print("finished query 29 at time " + time.asctime())
-    #
-    # #query30
-    # cursor.execute(queries["query30"])
-    # cursor.fetchall()
-    # print("finished query 30 at time " + time.asctime())
+            # util_funcs.delete_table(["__comp_msf1","__comp_msf2","__comp_msf3","__comp_msf4","__comp_msf5","__comp_secm1","__comp_secm2"])
+            period="month"
+            base="__comp_msf6"
+            out="comp_msf"
+        elif freq_use=="d":
+            period="day"
+            base="__comp_dsf3"
+            out="comp_dsf"
+        util_funcs.sort_and_remove_duplicates(table_in=base,table_out="__comp_sf1",sortvar="gvkey,iid,datadate",idvar="gvkey,iid,datadate")
+
+        # # #query24
+        # executor.execute_and_commit(queries["query24"])
+        # #
+        # # #query25
+        # executor.execute_and_commit(queries["query25"])
+        # #
+        # # #query26
+        # executor.execute_and_commit(queries["query26"])
+        # #
+        # # #query27
+        # executor.execute_and_commit(queries["query27"])
+        # #
+        # # #query28
+        # executor.execute_and_commit(queries["query28"])
+        # #
+        # # #query29
+        # executor.execute_and_commit(queries["query29"])
+        # #
+        # # #query30
+        # executor.execute_and_commit(queries["query30"])
     #
     # #query31
     # cursor.execute(queries["query31"])
