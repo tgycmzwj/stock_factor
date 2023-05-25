@@ -294,7 +294,7 @@ class query_storage:
                          END;""",
             "query19":"""CREATE TABLE __comp_secm2 AS 
                          SELECT *,prc_local*fx AS prc,prc_high*fx AS prc_high_new,
-                             prc_low*fx AS prc_low_new,prc*cshoc AS me,cshtrm*prc AS dolvol,ri_local*fx AS ri,
+                             prc_low*fx AS prc_low_new,prc_local*fx*cshoc AS me,cshtrm*prc_local*fx AS dolvol,ri_local*fx AS ri,
                              dvpsxm*fx_div AS div_tot,NULL AS div_cash_new,NULL AS div_spc_new
                          FROM __comp_secm1;""",
             "query21":"""CREATE TABLE __comp_msf4 AS
