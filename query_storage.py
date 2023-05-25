@@ -308,10 +308,6 @@ class query_storage:
                          FROM __comp_msf4
                          GROUP BY gvkey, iid, eom
                          HAVING COUNT(*)=1 OR (COUNT(*)=2 AND source='secd');""",
-            "query23":"""CREATE TABLE __comp_msf6 AS 
-                         SELECT DISTINCT * 
-                         FROM __comp_msf5
-                         ORDER BY gvkey,iid,emo;""",
             "query24":"""CREATE TABLE __comp_sf1 AS 
                          SELECT DISTINCT *
                          FROM {base}
