@@ -155,7 +155,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             # executor.execute_and_commit(queries["query21"].format(common_vars=",".join(char_collections.common_vars)))
             #
             # #query22
-            executor.execute_and_commit(queries["query22"])
+            # executor.execute_and_commit(queries["query22"])
             #
             # #query23
             util_funcs.sort_and_remove_duplicates(table_in="__comp_msf5",table_out="__comp_msf6",sortvar="gvkey,iid,emo",idvar="gvkey,iid,emo")
