@@ -156,14 +156,12 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             #
             # #query22
             executor.execute_and_commit(queries["query22"])
-            # cursor.execute(queries["query22"])
+            #
+            # #query23
+            util_funcs.sort_and_remove_duplicates(table_in="__comp_msf5",table_out="__comp_msf6",sortvar="gvkey,iid,emo",idvar="gvkey,iid,emo")
+            # cursor.execute(queries["query23"])
             # cursor.fetchall()
-            # print("finished query 22 at time " + time.asctime())
-    #
-    # #query23
-    # cursor.execute(queries["query23"])
-    # cursor.fetchall()
-    # print("finished query 23 at time " + time.asctime())
+            # print("finished query 23 at time " + time.asctime())
     #
     # #query24
     # cursor.execute(queries["query24"])
