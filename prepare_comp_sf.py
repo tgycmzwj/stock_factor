@@ -156,7 +156,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # executor.execute_and_commit(queries["query27"])
         # # #query28: update table __returns
         # #           handle situations where currency code changes
-        # executor.execute_and_commit(queries["query28"])
+        executor.execute_and_commit(queries["query28"])
         executor.execute_and_commit(queries["query28_1"])
     #     # #clean up
     #     util_funcs.keep_column("returns",["gvkey","iid","datadate",

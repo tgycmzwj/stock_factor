@@ -331,8 +331,7 @@ class query_storage:
                          WHERE row_number=1;""",
             "query28":"""CREATE TABLE __returns_final AS 
   SELECT
-    ret_local,
-    curcdd,
+    *,
     LAG(curcdd, 1) OVER (
       PARTITION BY gvkey, iid
       ORDER BY gvkey, iid
