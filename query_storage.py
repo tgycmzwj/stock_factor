@@ -369,7 +369,7 @@ class query_storage:
 			             FROM {base} AS a
 			             LEFT JOIN __returns AS b
 				         ON a.gvkey=b.gvkey AND a.iid=b.iid AND a.datadate=b.datadate
-			             LEFT JOIN __delist3 AS c
+			             LEFT JOIN __delist3 A c
 				         ON a.gvkey=c.gvkey AND a.iid=c.iid;""",
             "query85":"""CREATE TABLE __comp_sf3 AS 
                          SELECT *
