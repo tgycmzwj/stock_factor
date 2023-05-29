@@ -190,17 +190,17 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         #executor.execute_and_commit(queries["query86"])
     #     # #query87: update table __comp_sf3
     #     #           set variable ret_local
-        executor.execute_and_commit(queries["query87"])
+        #executor.execute_and_commit(queries["query87"])
     #     # #query88: clean up
-        util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
-                                   ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
+        #util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
+        #                           ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
         if freq_use=="d":
             scale=21
         else:
             scale=1
         # #query90: create table __comp_sf4
         #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
-        executor.execute_and_commit(queries["query90"].format(scale))
+        executor.execute_and_commit(queries["query90"].format(scale=scale))
     #
     #     # #query100: create table __comp_sf5
     #     #            join table __comp_sf4, __exchanges
