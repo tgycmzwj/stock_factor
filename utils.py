@@ -29,7 +29,7 @@ class utils(object):
 
 
     def keep_column(self,table:str,columns:List[str]):
-        query=self.query_bank["keep_columns"]
+        query=self.query_bank["keep_column"]
         self.cursor.execute(query.format(table_name=table,column_name=','.join(columns)))
         self.cursor.fetchall()
         self.delete_table([table])
