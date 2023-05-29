@@ -158,14 +158,14 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # #           handle situations where currency code changes
         # executor.execute_and_commit(queries["query28"])
         # executor.execute_and_commit(queries["query28_1"])
-    #     # #clean up
-        util_funcs.keep_column("__returns_final",["gvkey","iid","datadate",
-                                          "ret","ret_local","ret_lag_dif"])
-        util_funcs.delete_table(["__returns","__returns_temp"])
-        util_funcs.rename_table([["__returns_final","__returns"]])
+        # # #clean up
+        # util_funcs.keep_column("__returns_final",["gvkey","iid","datadate",
+        #                                   "ret","ret_local","ret_lag_dif"])
+        # util_funcs.delete_table(["__returns","__returns_temp"])
+        # util_funcs.rename_table([["__returns_final","__returns"]])
     #     # #query29: create table sec_info
     #     #           union comp_security and comp_g_security
-    #     executor.execute_and_commit(queries["query29"])
+        executor.execute_and_commit(queries["query29"])
     #     # #query30: create table __delist1_temp
     #     #           select from __returns, create row_number
     #     executor.execute_and_commit(queries["query30"])
