@@ -388,7 +388,7 @@ class query_storage:
             "query90":"""CREATE TABLE __comp_sf4 AS
                          SELECT a.*, a.ret-coalesce(b.t30ret, c.rf)/{scale} AS ret_exc 
 			             FROM __comp_sf3 AS a
-			             LEFT JOIN crsp.mcti AS b
+			             LEFT JOIN crsp_mcti AS b
 				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',b.caldt)
 			             LEFT JOIN ff.factors_monthly AS c
 				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',c.date);""",
