@@ -330,17 +330,11 @@ class query_storage:
                          SET ret=NULL,ret_local=NULL,ret_lag_dif=NULL
                          WHERE row_number=1;""",
             "query28":"""CREATE TABLE __returns_final AS 
-  SELECT
-    *,
-    LAG(curcdd, 1) OVER (
-      PARTITION BY gvkey, iid
-      ORDER BY gvkey, iid
-    ) AS prev_curcdd
-  FROM
-    __returns;""",
-            "query28_1": """UPDATE __returns_final 
-                               SET ret_local = ret
-                               WHERE row_number = 1 AND curcdd != prev_curcdd;""",
+                         SELECT *, LAG(curcdd,1) OVER (PARTITION BY gvkey, iid ORDER BY gvkey, iid) AS prev_curcdd
+                         FROM __returns;""",
+            "query28_1":"""UPDATE __returns_final 
+                           SET ret_local = ret
+                           WHERE row_number = 1 AND curcdd != prev_curcdd;""",
             "query29":"""CREATE TABLE __sec_info AS
                          SELECT *
                          FROM comp_security
