@@ -148,66 +148,66 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # # #query25: create table __returns_temp
         # #           filter __comp_sf1
         executor.execute_and_commit(queries["query25"])
-        # #query26: create table __returns
-        #           select from __returns_temp
-        executor.execute_and_commit(queries["query26"])
-        # #query27: update table __returns
-        #           set the first observation in each group to be NULL
-        executor.execute_and_commit(queries["query27"])
-        # #query28: update table __returns
-        #           handle situations where currency code changes
-        executor.execute_and_commit(queries["query28"])
-        # #clean up
-        util_funcs.keep_column("returns",["gvkey","iid","datadate",
-                                          "ret","ret_local","ret_lag_dif"])
-        # #query29: create table sec_info
-        #           union comp_security and comp_g_security
-        executor.execute_and_commit(queries["query29"])
-        # #query30: create table __delist1_temp
-        #           select from __returns, create row_number
-        executor.execute_and_commit(queries["query30"])
-        # #query31: create table __delist1
-        #           only keep the last observation in each group
-        executor.execute_and_commit(queries["query31"])
-        # #query70: create table __delist2
-        #           join __delist1 and __sec_info
-        executor.execute_and_commit(queries["query70"])
-        # #query75: create table __delist3
-        #           select from __delist2
-        executor.execute_and_commit(queries["query75"])
-        # #query80: create table __comp_sf2
-        #           join base,__returns,__delist3
-        executor.execute_and_commit(queries["query80"])
-        # #query85: create table __comp_sf3
-        #           select non-delisted observations from __comp_sf2
-        executor.execute_and_commit(queries["query85"])
-        # #query86: update table __comp_sf3
-        #           set variable ret
-        executor.execute_and_commit(queries["query86"])
-        # #query87: update table __comp_sf3
-        #           set variable ret_local
-        executor.execute_and_commit(queries["query87"])
-        # #query88: clean up
-        util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
-                                  ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
-        if freq_use=="d":
-            scale=21
-        elif freq_use=="m":
-            scale=1
-        # #query90: create table __comp_sf4
-        #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
-        executor.execute_and_commit(queries["query90"].format(scale))
-
-        # #query100: create table __comp_sf5
-        #            join table __comp_sf4, __exchanges
-        executor.execute_and_commit(queries["query100"])
-        util_funcs.sort_and_remove_duplicates(table_in="__comp_sf6",table_out=out,idvar="gvkey,iid,datadate",sortvar="gvkey,iid,datadate")
-    # #query101: clean up
-    util_funcs.delete_table(["__firm_shares1","__firm_shares2","fx",
-                             "__comp_dsf_na","__comp_dsf_global","__comp_dsf1",
-                             "__comp_dsf2","__comp_dsf3","__returns",
-                             "__sec_info","__delist1","__delist2",
-                             "__delist3","__comp_sf1","__comp_sf2",
-                             "__comp_sf3","__comp_sf4","__comp_sf5",
-                             "__comp_sf6","__exchanges"])
-
+    #     # #query26: create table __returns
+    #     #           select from __returns_temp
+    #     executor.execute_and_commit(queries["query26"])
+    #     # #query27: update table __returns
+    #     #           set the first observation in each group to be NULL
+    #     executor.execute_and_commit(queries["query27"])
+    #     # #query28: update table __returns
+    #     #           handle situations where currency code changes
+    #     executor.execute_and_commit(queries["query28"])
+    #     # #clean up
+    #     util_funcs.keep_column("returns",["gvkey","iid","datadate",
+    #                                       "ret","ret_local","ret_lag_dif"])
+    #     # #query29: create table sec_info
+    #     #           union comp_security and comp_g_security
+    #     executor.execute_and_commit(queries["query29"])
+    #     # #query30: create table __delist1_temp
+    #     #           select from __returns, create row_number
+    #     executor.execute_and_commit(queries["query30"])
+    #     # #query31: create table __delist1
+    #     #           only keep the last observation in each group
+    #     executor.execute_and_commit(queries["query31"])
+    #     # #query70: create table __delist2
+    #     #           join __delist1 and __sec_info
+    #     executor.execute_and_commit(queries["query70"])
+    #     # #query75: create table __delist3
+    #     #           select from __delist2
+    #     executor.execute_and_commit(queries["query75"])
+    #     # #query80: create table __comp_sf2
+    #     #           join base,__returns,__delist3
+    #     executor.execute_and_commit(queries["query80"])
+    #     # #query85: create table __comp_sf3
+    #     #           select non-delisted observations from __comp_sf2
+    #     executor.execute_and_commit(queries["query85"])
+    #     # #query86: update table __comp_sf3
+    #     #           set variable ret
+    #     executor.execute_and_commit(queries["query86"])
+    #     # #query87: update table __comp_sf3
+    #     #           set variable ret_local
+    #     executor.execute_and_commit(queries["query87"])
+    #     # #query88: clean up
+    #     util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
+    #                               ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
+    #     if freq_use=="d":
+    #         scale=21
+    #     elif freq_use=="m":
+    #         scale=1
+    #     # #query90: create table __comp_sf4
+    #     #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
+    #     executor.execute_and_commit(queries["query90"].format(scale))
+    #
+    #     # #query100: create table __comp_sf5
+    #     #            join table __comp_sf4, __exchanges
+    #     executor.execute_and_commit(queries["query100"])
+    #     util_funcs.sort_and_remove_duplicates(table_in="__comp_sf6",table_out=out,idvar="gvkey,iid,datadate",sortvar="gvkey,iid,datadate")
+    # # #query101: clean up
+    # util_funcs.delete_table(["__firm_shares1","__firm_shares2","fx",
+    #                          "__comp_dsf_na","__comp_dsf_global","__comp_dsf1",
+    #                          "__comp_dsf2","__comp_dsf3","__returns",
+    #                          "__sec_info","__delist1","__delist2",
+    #                          "__delist3","__comp_sf1","__comp_sf2",
+    #                          "__comp_sf3","__comp_sf4","__comp_sf5",
+    #                          "__comp_sf6","__exchanges"])
+    #
