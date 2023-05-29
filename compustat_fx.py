@@ -30,6 +30,6 @@ def compustat_fx(conn,cursor):
     util_funcs.duplicate_records(table_in="__fx3",table_out="__fx4",num="n")
     executor.execute_and_commit(queries["query7"])
     #query9: clean up
-    util_funcs.delete_column([["__fx3","datadate"],["__fx3","following"],["__fx3","n"]])
-    util_funcs.sort_and_remove_duplicates(table_in="__fx3",table_out="fx",sortvar="curcdd,date",idvar="curcdd,date")
-    util_funcs.delete_table(["__fx1","__fx2","__fx3"])
+    util_funcs.delete_column([["__fx4","datadate"],["__fx4","following"],["__fx4","n"],["__fx4","value"]])
+    util_funcs.sort_and_remove_duplicates(table_in="__fx4",table_out="fx",sortvar="curcdd,date",idvar="curcdd,date")
+    util_funcs.delete_table(["__fx1","__fx2","__fx3","__fx4"])

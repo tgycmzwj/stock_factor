@@ -1128,7 +1128,7 @@ class query_storage:
             "query6":"""UPDATE __fx3
                         SET n=JULIANDAY(following)-JULIANDAY(date);""",
             "query7":"""UPDATE __fx4
-                        SET date=DATE(datadate,'+' || n || ' days');""",
+                        SET date=DATE(datadate,'+' || value || ' days');""",
         },
 
 
