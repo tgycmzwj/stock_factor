@@ -45,8 +45,7 @@ class main():
         # prepare_crsp_sf(conn,cursor,"d")
 
         # #process world data from compustat
-        compustat_fx(conn,cursor)
-        #prepare_comp_sf(conn,cursor,"m")
+        prepare_comp_sf(conn,cursor,"m")
 
 
 if __name__=="__main__":
