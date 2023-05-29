@@ -181,7 +181,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         #executor.execute_and_commit(queries["query75"])
     #     # #query80: create table __comp_sf2
     #     #           join base,__returns,__delist3
-        executor.execute_and_commit(queries["query80"].format(base))
+        executor.execute_and_commit(queries["query80"].format(base=base))
     #     # #query85: create table __comp_sf3
     #     #           select non-delisted observations from __comp_sf2
         executor.execute_and_commit(queries["query85"])
