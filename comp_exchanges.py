@@ -20,13 +20,13 @@ def comp_exchanges(conn,cursor,out):
     #        select from __ex_country1
     executor.execute_and_commit(queries["query2"])
 
-    #query1: create table __ex_country3
+    #query3: create table __ex_country3
     #        join table __ex_country2 and comp_r_ex_codes
     executor.execute_and_commit(queries["query3"])
 
-    #query1: create table {out}
+    #query4: create table {out}
     #        select from __ex_country3
-    executor.execute_and_commit(queries["query4"].format(out="__exchanges"))
+    executor.execute_and_commit(queries["query4"].format(out=out))
     #clean up
     util_funcs.delete_table(["__ex_country1","__ex_country2",
                              "__ex_country3"])

@@ -544,11 +544,7 @@ class query_storage:
                          SELECT gvkey, prirow, priusa, prican FROM comp_g_company
                          )
                          GROUP BY gvkey;""",
-            "query5":"""CREATE TABLE __header_sorted AS 
-                        SELECT DISTINCT gvkey, prirow, priusa, prican 
-                        FROM __header 
-                        ORDER BY gvkey;""",
-            "query6":"""CREATE TABLE __data1 AS 
+            "query5":"""CREATE TABLE __data1 AS 
                         SELECT DISTINCT data_a.*,
                         coalesce(data_b.prihistrow,data_e.prirow) AS prihistrow,
                         coalesce(data_c.prihistusa,data_e.priusa) AS prihistusa,
@@ -562,20 +558,9 @@ class query_storage:
                             ON data_a.gvkey=data_d.gvkey AND data_a.{date_var}>=data_d.effdate AND (data_a.{date_var}<=data_d.thrudate OR data_d.thrudate IS NULL)
                         LEFT JOIN __header AS data_e
                             ON data_a.gvkey=data_e.gvkey;""",
-            "query7":"""CREATE TABLE __data2 AS 
+            "query6":"""CREATE TABLE __data2 AS 
                         SELECT *,(iid IS NOT NULL AND (iid=prihistrow OR iid=prihistusa OR iid=prihistcan)) AS primary_sec
                         FROM __data1;""",
-            "query8":"""CREATE TABLE {out} AS 
-                        SELECT * FROM __data2;""",
-            "query8_1":"""ALTER TABLE {out} DROP COLUMN prihistrow;""",
-            "query8_2":"""ALTER TABLE {out} DROP COLUMN prihistusa;""",
-            "query8_1":"""ALTER TABLE {out} DROP COLUMN prihistcan;""",
-            "query9_1":"""DROP TABLE IF EXISTS __prihistrow;""",
-            "query9_2":"""DROP TABLE IF EXISTS __prihistusa;""",
-            "query9_3":"""DROP TABLE IF EXISTS __prihistcan;""",
-            "query9_4":"""DROP TABLE IF EXISTS __header;""",
-            "query9_5":"""DROP TABLE IF EXISTS __data1;""",
-            "query9_6":"""DROP TABLE IF EXISTS __data2;""",
         },
 
 
@@ -965,12 +950,6 @@ class query_storage:
                               SELECT DISTINCT * 
                               FROM __dsf_world3
                               ORDER BY id eom;""",
-            "query8_1": "DROP TABLE IF EXISTS __msf_world1;",
-            "query8_2": "DROP TABLE IF EXISTS __msf_world2;",
-            "query8_3": "DROP TABLE IF EXISTS __msf_world3;",
-            "query8_4": "DROP TABLE IF EXISTS __dsf_world1;",
-            "query8_5": "DROP TABLE IF EXISTS __dsf_world2;",
-            "query8_6": "DROP TABLE IF EXISTS __obs_main;",
         },
 
 
@@ -1073,7 +1052,7 @@ class query_storage:
                         WHERE gvkey!='175650' OR datadate!=DATE('2005-12-31') OR naics IS NOT NULL;""",
             "query3":"""CREATE TABLE comp3 AS
 		                SELECT DISTINCT gvkey, datadate, sich AS sic, naicsh AS naics
-		                FROM COMP.G_FUNDA;""",
+		                FROM COMP_G_FUNDA;""",
 		    "query4":"""CREATE TABLE comp4 AS
 		                SELECT a.gvkey AS gvkeya, a.datadate AS datea, a.sic AS sica, a.naics AS naicsa, 
 			                b.gvkey AS gvkeyb, b.datadate AS dateb, b.sic AS sicb, b.naics AS naicsb
@@ -1278,7 +1257,7 @@ class query_storage:
         "crsp_industry": {
             "query1": """CREATE TABLE permno0 AS
                             SELECT DISTINCT permno,permco,namedt,nameendt,siccd AS sic,cast(naics AS INTEGER) AS naics
-                            FROM crsp.dsenames
+                            FROM crsp_dsenames
                             ORDER BY permno, namedt, nameendt;""",
             "query2": """UPDATE permno0
                             SET sic=
@@ -1288,31 +1267,14 @@ class query_storage:
                                 WHEN naics IS NULL THEN -999
                                 ELSE sic
                             END;""",
-            "query3": """UPDATE permno0
-                            SET permno_diff=julianday(nameendt)-julianday(namedt)
-                            END;""",
-            "query4": """CREATE TABLE permno2 AS 
-                            SELECT * FROM permno0
-                            ORDER BY permno,namedt,nameendt""",
-            "query5_1": """CREATE TABLE permno3 AS
-                            SELECT * FROM permno2;""",
-            "query5_2": """UPDATE permno3
-                              SET namedt=DATE(namedt,'{} days')""",
-            "query5_3": """ALTER TABLE permno3 DROP COLUMN nameendt;""",
-            "query5_4": """ALTER TABLE permno3 DROP COLUMN nameendt;""",
-            "query6": """CREATE TABLE permno4 AS
+            "query3":"""UPDATE permno0
+                        SET permno_diff=INTCK_(namedt,nameendt,'day','discrete') 
+                        END;""",
+            "query4": """CREATE TABLE permno4 AS
                             SELECT *, CASE WHEN sic = -999 THEN NULL ELSE sic END AS sic, 
                             CASE WHEN naics = -999 THEN NULL ELSE naics END AS naics,
                             date=namedt
-                            FROM permno0;""",
-            "query6_1": """ALTER TABLE permno4 DROP COLUMN namedt;""",
-            "query7": """CREATE TABLE {out} AS 
-                            SELECT DISTINCT * FROM permno4
-                            ORDER BY permno,date;""",
-            "query8_1": """DROP TABLE IF EXISTS permno0;""",
-            "query8_2": """DROP TABLE IF EXISTS permno2;""",
-            "query8_3": """DROP TABLE IF EXISTS permno3;""",
-            "query8_4": """DROP TABLE IF EXISTS permno4;""",
+                            FROM permno3;""",
         },
 
 
@@ -1533,7 +1495,7 @@ class query_storage:
         "firms_age":{
             "query1":"""CREATE TABLE crsp_age1 AS
                         SELECT permco, MIN(date) AS crsp_first
-                        FROM crsp.msf
+                        FROM crsp_msf
                         GROUP BY permco;""",
             "query2":"""CREATE TABLE comp_acc_age1 AS
                         SELECT gvkey, datadate FROM comp_funda

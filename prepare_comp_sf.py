@@ -3,6 +3,8 @@ import utils
 from compustat_fx import compustat_fx
 from query_storage import query_storage
 from chars_config import chars_config
+from comp_exchanges import comp_exchanges
+from add_primary_sec import add_primary_sec
 
 def prepare_comp_sf(conn,cursor,freq="m"):
     #initiate utilities
@@ -201,17 +203,20 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # #query90: create table __comp_sf4
         #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
         executor.execute_and_commit(queries["query90"].format(scale=scale))
+
+        comp_exchanges(conn,cursor,"__exchanges")
     #
     #     # #query100: create table __comp_sf5
     #     #            join table __comp_sf4, __exchanges
-    #     executor.execute_and_commit(queries["query100"])
-    #     util_funcs.sort_and_remove_duplicates(table_in="__comp_sf6",table_out=out,idvar="gvkey,iid,datadate",sortvar="gvkey,iid,datadate")
+        executor.execute_and_commit(queries["query100"])
+        add_primary_sec(conn,cursor,"__comp_sf5","__comp_sf6","datadate")
+        util_funcs.sort_and_remove_duplicates(table_in="__comp_sf6",table_out=out,idvar="gvkey,iid,datadate",sortvar="gvkey,iid,datadate")
     # # #query101: clean up
-    # util_funcs.delete_table(["__firm_shares1","__firm_shares2","fx",
-    #                          "__comp_dsf_na","__comp_dsf_global","__comp_dsf1",
-    #                          "__comp_dsf2","__comp_dsf3","__returns",
-    #                          "__sec_info","__delist1","__delist2",
-    #                          "__delist3","__comp_sf1","__comp_sf2",
-    #                          "__comp_sf3","__comp_sf4","__comp_sf5",
-    #                          "__comp_sf6","__exchanges"])
+    util_funcs.delete_table(["__firm_shares1","__firm_shares2","fx",
+                             "__comp_dsf_na","__comp_dsf_global","__comp_dsf1",
+                             "__comp_dsf2","__comp_dsf3","__returns",
+                             "__sec_info","__delist1","__delist2",
+                             "__delist3","__comp_sf1","__comp_sf2",
+                             "__comp_sf3","__comp_sf4","__comp_sf5",
+                             "__comp_sf6","__exchanges"])
     #
