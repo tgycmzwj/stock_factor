@@ -193,7 +193,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         executor.execute_and_commit(queries["query87"])
     #     # #query88: clean up
         util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
-    #                               ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
+                                   ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
         if freq_use=="d":
             scale=21
         else:
