@@ -148,12 +148,12 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # # #query25: create table __returns_temp
         # #           filter __comp_sf1
         # executor.execute_and_commit(queries["query25"])
-        # #query26: create table __returns
-        #           select from __returns_temp
-        executor.execute_and_commit(queries["query26"])
-    #     # #query27: update table __returns
-    #     #           set the first observation in each group to be NULL
-    #     executor.execute_and_commit(queries["query27"])
+        # # #query26: create table __returns
+        # #           select from __returns_temp
+        # executor.execute_and_commit(queries["query26"])
+        # #query27: update table __returns
+        #           set the first observation in each group to be NULL
+        executor.execute_and_commit(queries["query27"])
     #     # #query28: update table __returns
     #     #           handle situations where currency code changes
     #     executor.execute_and_commit(queries["query28"])
