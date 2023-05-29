@@ -366,10 +366,10 @@ class query_storage:
 			             WHERE secstat='I';""",
             "query80":"""CREATE TABLE __comp_sf2 AS 
 			             SELECT a.*, b.ret, b.ret_local, b.ret_lag_dif, c.date_delist, c.dlret
-			             FROM {base} AS a
+			             FROM {base} A a
 			             LEFT JOIN __returns AS b
 				         ON a.gvkey=b.gvkey AND a.iid=b.iid AND a.datadate=b.datadate
-			             LEFT JOIN __delist3 A c
+			             LEFT JOIN __delist3 AS c
 				         ON a.gvkey=c.gvkey AND a.iid=c.iid;""",
             "query85":"""CREATE TABLE __comp_sf3 AS 
                          SELECT *
