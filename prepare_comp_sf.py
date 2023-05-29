@@ -147,10 +147,10 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # util_funcs.sort_and_remove_duplicates(table_in=base,table_out="__comp_sf1",sortvar="gvkey,iid,datadate",idvar="gvkey,iid,datadate")
         # # #query25: create table __returns_temp
         # #           filter __comp_sf1
-        executor.execute_and_commit(queries["query25"])
-    #     # #query26: create table __returns
-    #     #           select from __returns_temp
-    #     executor.execute_and_commit(queries["query26"])
+        # executor.execute_and_commit(queries["query25"])
+        # #query26: create table __returns
+        #           select from __returns_temp
+        executor.execute_and_commit(queries["query26"])
     #     # #query27: update table __returns
     #     #           set the first observation in each group to be NULL
     #     executor.execute_and_commit(queries["query27"])
