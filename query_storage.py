@@ -331,7 +331,7 @@ class query_storage:
                          WHERE row_number=1;""",
             "query28":"""UPDATE __returns
                          SET ret_local=ret
-                         WHERE row_number=1 AND curcdd!=LAG(curcdd) OVER(PARTITION BY gvkey,iid ORDER BY gvkey,iid);""",
+                         WHERE row_number=1 AND curcdd!=LAG(curcdd,1) OVER(PARTITION BY gvkey,iid ORDER BY gvkey,iid);""",
             "query29":"""CREATE TABLE __sec_info AS
                          SELECT *
                          FROM comp_security
