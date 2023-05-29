@@ -390,7 +390,7 @@ class query_storage:
 			             FROM __comp_sf3 AS a
 			             LEFT JOIN crsp_mcti AS b
 				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',b.caldt)
-			             LEFT JOIN ff.factors_monthly AS c
+			             LEFT JOIN ff_factors_monthly AS c
 				         ON STRFTIME('%Y-%m',a.datadate)=STRFTIME('%Y-%m',c.date);""",
             "query100":"""CREATE TABLE __comp_sf5 AS
                          SELECT a.*, b.excntry, b.exch_main
