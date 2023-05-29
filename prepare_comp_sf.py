@@ -165,19 +165,19 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         # util_funcs.rename_table([["__returns_final","__returns"]])
     #     # #query29: create table sec_info
     #     #           union comp_security and comp_g_security
-        executor.execute_and_commit(queries["query29"])
+        #executor.execute_and_commit(queries["query29"])
     #     # #query30: create table __delist1_temp
     #     #           select from __returns, create row_number
-    #     executor.execute_and_commit(queries["query30"])
+        executor.execute_and_commit(queries["query30"])
     #     # #query31: create table __delist1
     #     #           only keep the last observation in each group
-    #     executor.execute_and_commit(queries["query31"])
+        executor.execute_and_commit(queries["query31"])
     #     # #query70: create table __delist2
     #     #           join __delist1 and __sec_info
-    #     executor.execute_and_commit(queries["query70"])
+        executor.execute_and_commit(queries["query70"])
     #     # #query75: create table __delist3
     #     #           select from __delist2
-    #     executor.execute_and_commit(queries["query75"])
+        executor.execute_and_commit(queries["query75"])
     #     # #query80: create table __comp_sf2
     #     #           join base,__returns,__delist3
     #     executor.execute_and_commit(queries["query80"])
