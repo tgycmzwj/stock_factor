@@ -168,28 +168,28 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         #executor.execute_and_commit(queries["query29"])
     #     # #query30: create table __delist1_temp
     #     #           select from __returns, create row_number
-        executor.execute_and_commit(queries["query30"])
+        #executor.execute_and_commit(queries["query30"])
     #     # #query31: create table __delist1
     #     #           only keep the last observation in each group
-        executor.execute_and_commit(queries["query31"])
+        #executor.execute_and_commit(queries["query31"])
     #     # #query70: create table __delist2
     #     #           join __delist1 and __sec_info
-        executor.execute_and_commit(queries["query70"])
+        #executor.execute_and_commit(queries["query70"])
     #     # #query75: create table __delist3
     #     #           select from __delist2
-        executor.execute_and_commit(queries["query75"])
+        #executor.execute_and_commit(queries["query75"])
     #     # #query80: create table __comp_sf2
     #     #           join base,__returns,__delist3
-    #     executor.execute_and_commit(queries["query80"])
+        executor.execute_and_commit(queries["query80"])
     #     # #query85: create table __comp_sf3
     #     #           select non-delisted observations from __comp_sf2
-    #     executor.execute_and_commit(queries["query85"])
-    #     # #query86: update table __comp_sf3
+        executor.execute_and_commit(queries["query85"])
+        # #query86: update table __comp_sf3
     #     #           set variable ret
-    #     executor.execute_and_commit(queries["query86"])
+        executor.execute_and_commit(queries["query86"])
     #     # #query87: update table __comp_sf3
     #     #           set variable ret_local
-    #     executor.execute_and_commit(queries["query87"])
+    #    executor.execute_and_commit(queries["query87"])
     #     # #query88: clean up
     #     util_funcs.delete_column([["__comp_sf3","ri"],["__comp_sf3","ri_local"],
     #                               ["__comp_sf3","date_delist"],["__comp_sf3","dlret"]])
