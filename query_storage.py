@@ -329,9 +329,22 @@ class query_storage:
             "query27":"""UPDATE __returns
                          SET ret=NULL,ret_local=NULL,ret_lag_dif=NULL
                          WHERE row_number=1;""",
-            "query28":"""UPDATE __returns
-                         SET ret_local=ret
-                         WHERE row_number=1 AND curcdd!=LAG(curcdd,1) OVER(PARTITION BY gvkey,iid ORDER BY gvkey,iid);""",
+            "query28":"""WITH cte AS (
+  SELECT
+    ret_local,
+    curcdd,
+    LAG(curcdd, 1) OVER (
+      PARTITION BY gvkey, iid
+      ORDER BY gvkey, iid
+    ) AS prev_curcdd,
+    row_number()
+      OVER (PARTITION BY gvkey, iid ORDER BY gvkey, iid) AS rn
+  FROM
+    __returns
+)
+UPDATE cte
+SET ret_local = ret
+WHERE rn = 1 AND curcdd != prev_curcdd;""",
             "query29":"""CREATE TABLE __sec_info AS
                          SELECT *
                          FROM comp_security
