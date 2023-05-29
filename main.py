@@ -13,6 +13,7 @@ from prepare_crsp_sf import prepare_crsp_sf
 from prepare_comp_sf import prepare_comp_sf
 from helper_func import prepare_helper_func
 from unify_datatype import unify_datatype
+from compustat_fx import compustat_fx
 
 
 class main():
@@ -44,7 +45,8 @@ class main():
         # prepare_crsp_sf(conn,cursor,"d")
 
         # #process world data from compustat
-        prepare_comp_sf(conn,cursor,"m")
+        compustat_fx(conn,cursor)
+        #prepare_comp_sf(conn,cursor,"m")
 
 
 if __name__=="__main__":

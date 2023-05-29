@@ -4,7 +4,10 @@ class query_storage:
         "utils":{
             "delete_table":"DROP TABLE IF EXISTS {table_name};",
             "delete_column":"ALTER TABLE {table_name} DROP COLUMN {column_name};",
-            "rename_table":"ALTER TABLE {table_name_old} RENAME TO {table_name_new}",
+            "keep_column":"""CREATE TABLE {table_name}_new AS 
+                             SELECT {column_name} 
+                             FROM {table_name};""",
+            "rename_table":"ALTER TABLE {table_name_old} RENAME TO {table_name_new};",
             "rename_column":"ALTER TABLE {table_name} RENAME COLUMN {column_name_old} TO {column_name_new};",
             "return_column":"SELECT {column_name} FROM {table_name};",
             "sort_table":"""CREATE TABLE {table_name}_sorted AS 
@@ -369,12 +372,12 @@ class query_storage:
                          SELECT *
                          FROM __comp_sf2
                          WHERE datadate<=date_delist OR date_delist IS NULL;""",
-            "query86":"""UPDATE __comp_sf2 
+            "query86":"""UPDATE __comp_sf3 
                          SET ret=
                          CASE WHEN datadate=date_delist THEN ret=(1+ret)*(1+dlret)-1
                               ELSE ret
                          END;""",
-            "query87":"""UPDATE __comp_sf2 
+            "query87":"""UPDATE __comp_sf3 
                          SET ret_local=
                          CASE WHEN datadate=date_delist THEN ret_local=(1+ret_local)*(1+dlret)-1
                               ELSE ret_local
@@ -391,26 +394,6 @@ class query_storage:
                          FROM __comp_sf4 AS a 
                          LEFT JOIN __exchanges AS b
                          ON a.exchg=b.exchg;""",
-            # "qeury101_1":"DROP TABLE IF EXISTS __firm_shares1",
-            # "qeury101_2": "DROP TABLE IF EXISTS __firm_shares2",
-            # "qeury101_3": "DROP TABLE IF EXISTS fx",
-            # "qeury101_4": "DROP TABLE IF EXISTS __comp_dsf_na",
-            # "qeury101_5": "DROP TABLE IF EXISTS __comp_dsf_global",
-            # "qeury101_6": "DROP TABLE IF EXISTS __comp_dsf1",
-            # "qeury101_7": "DROP TABLE IF EXISTS __comp_dsf2",
-            # "qeury101_8": "DROP TABLE IF EXISTS __comp_dsf3",
-            # "qeury101_9": "DROP TABLE IF EXISTS __returns",
-            # "qeury101_10": "DROP TABLE IF EXISTS __sec_info",
-            # "qeury101_11": "DROP TABLE IF EXISTS __delist1",
-            # "qeury101_12": "DROP TABLE IF EXISTS __delist2",
-            # "qeury101_13": "DROP TABLE IF EXISTS __delist3",
-            # "qeury101_14": "DROP TABLE IF EXISTS __comp_sf1",
-            # "qeury101_15": "DROP TABLE IF EXISTS __comp_sf2",
-            # "qeury101_16": "DROP TABLE IF EXISTS __comp_sf3",
-            # "qeury101_17": "DROP TABLE IF EXISTS __comp_sf4",
-            # "qeury101_18": "DROP TABLE IF EXISTS __comp_sf5",
-            # "qeury101_19": "DROP TABLE IF EXISTS __comp_sf6",
-            # "qeury101_20": "DROP TABLE IF EXISTS __exchanges",
         },
 
 
@@ -1144,7 +1127,7 @@ class query_storage:
                         WHERE following IS NULL;""",
             "query6":"""UPDATE __fx3
                         SET n=JULIANDAY(following)-JULIANDAY(date);""",
-            "query7":"""UPDATE __fx3
+            "query7":"""UPDATE __fx4
                         SET date=DATE(datadate,'+' || n || ' days');""",
         },
 

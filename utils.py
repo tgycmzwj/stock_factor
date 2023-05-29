@@ -27,6 +27,15 @@ class utils(object):
             print("finished deleting column {} in table {} at time {}".format(column,table,time.asctime()))
         print("finished deleting all columns")
 
+
+    def keep_column(self,table:str,columns:List[str]):
+        query=self.query_bank["keep_columns"]
+        self.cursor.execute(query.format(table_name=table,column_name=','.join(columns)))
+        self.cursor.fetchall()
+        self.delete_table([table])
+        self.rename_table([[table+"_new",table]])
+
+
     def rename_table(self,tables:List[List[str]]):
         query=self.query_bank["rename_table"]
         for table_name_old,table_name_new in tables:
@@ -101,7 +110,6 @@ class utils(object):
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-
     def list_table(self):
         query=self.query_bank["list_table"]
         self.cursor.execute(query)
@@ -118,12 +126,10 @@ class executor(object):
     def __init__(self,conn,cursor):
         self.cursor=cursor
         self.conn=conn
-        self.counter=0
     def execute_and_commit(self,query):
         self.cursor.execute(query)
         self.conn.commit()
-        self.counter=self.counter+1
-        print("finished query{} at time {}".format(self.counter,time.asctime()))
+        print("finished query{} at time {}".format(query[:100].replace("/n"," "),time.asctime()))
         return self.cursor.fetchall()
 
 if __name__=="__main__":
