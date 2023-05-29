@@ -70,7 +70,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
     base=""
     for iter in range(iter_max):
         if freq=="month" or freq=="day":
-            freq_use=freq
+            freq_use=freq[0]
         elif iter==1:
             freq_use="d"
         else:
