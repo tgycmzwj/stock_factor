@@ -129,7 +129,7 @@ class executor(object):
     def execute_and_commit(self,query):
         self.cursor.execute(query)
         self.conn.commit()
-        print("finished query{} at time {}".format(query[:100].replace("/n"," "),time.asctime()))
+        print("finished query {} at time {}".format(query[:100].replace("/n"," "),time.asctime()))
         return self.cursor.fetchall()
 
 if __name__=="__main__":

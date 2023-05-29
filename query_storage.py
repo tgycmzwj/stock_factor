@@ -324,7 +324,7 @@ class query_storage:
                                 PARTITION BY gvkey,iid 
                                 ORDER BY gvkey,iid) 
                                 AS row_number 
-                         FROM returns_temp;
+                         FROM __returns_temp;
                          """,
             "query27":"""UPDATE __returns
                          SET ret=NULL,ret_local=NULL,ret_lag_dif=NULL
