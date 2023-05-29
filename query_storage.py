@@ -999,9 +999,6 @@ class query_storage:
             "query4": """CREATE TABLE {out} AS
         		                SELECT *, (excntry!='multi_national' AND exchg NOT IN {special_exchanges}) AS exch_main
         		                FROM __ex_country3;""",
-            "query5_1": """DROP TABLE IF EXISTS __ex_country1;""",
-            "query5_2": """DROP TABLE IF EXISTS __ex_country2;""",
-            "query5_3": """DROP TABLE IF EXISTS __ex_country3;""",
         },
 
 
