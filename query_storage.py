@@ -364,7 +364,7 @@ class query_storage:
 				         CASE WHEN dlrsni in ('02', '03') THEN -0.3 ELSE 0 END AS dlret
 			             FROM __delist2
 			             WHERE secstat='I';""",
-            "query80":"""CREATE TABLE __comp_sf2 AS
+            "query80":"""CREATE TABLE __comp_sf2 AS 
 			             SELECT a.*, b.ret, b.ret_local, b.ret_lag_dif, c.date_delist, c.dlret
 			             FROM {base} AS a
 			             LEFT JOIN __returns AS b
