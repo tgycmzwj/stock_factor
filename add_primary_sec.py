@@ -6,11 +6,11 @@ from chars_config import chars_config
 
 def add_primary_sec(conn,cursor,data,out,date_var):
     # initiate utilities
-    queries = query_storage.query_bank["comp_exchanges"]
+    queries = query_storage.query_bank["add_primary_sec"]
     util_funcs = utils.utils(conn, cursor)
     executor=utils.executor(conn,cursor)
     char_collections=chars_config()
-    print("Starting process comp_exchanges at time " + time.asctime())
+    print("Starting process add_primary_sec at time " + time.asctime())
 
     #query1: create table __prihistrow
     #        select from comp_g_sec_history

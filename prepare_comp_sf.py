@@ -204,11 +204,11 @@ def prepare_comp_sf(conn,cursor,freq="m"):
         #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
         # executor.execute_and_commit(queries["query90"].format(scale=scale))
 
-        comp_exchanges(conn,cursor,"__exchanges")
+        #comp_exchanges(conn,cursor,"__exchanges")
     #
     #     # #query100: create table __comp_sf5
     #     #            join table __comp_sf4, __exchanges
-        executor.execute_and_commit(queries["query100"])
+        #executor.execute_and_commit(queries["query100"])
         add_primary_sec(conn,cursor,"__comp_sf5","__comp_sf6","datadate")
         util_funcs.sort_and_remove_duplicates(table_in="__comp_sf6",table_out=out,idvar="gvkey,iid,datadate",sortvar="gvkey,iid,datadate")
     # # #query101: clean up
