@@ -6,7 +6,7 @@ def comp_hgics(conn,cursor,lib,out):
     queries=query_storage.query_bank["comp_hgics"]
     util_funcs = utils.utils(conn, cursor)
     executor=utils.executor(conn,cursor)
-    print("Starting processing compustat_fx at time " + time.asctime())
+    print("Starting processing comp_hgics at time " + time.asctime())
 
     #query1: create table gic1
     #        select from comp_{lib}

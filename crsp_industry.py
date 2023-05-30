@@ -4,13 +4,13 @@ from query_storage import query_storage
 from chars_config import chars_config
 
 
-def add_primary_sec(conn,cursor,out):
+def crsp_industry(conn,cursor,out):
     # initiate utilities
-    queries = query_storage.query_bank["comp_exchanges"]
+    queries = query_storage.query_bank["crsp_industry"]
     util_funcs = utils.utils(conn, cursor)
     executor=utils.executor(conn,cursor)
     char_collections=chars_config()
-    print("Starting process comp_exchanges at time " + time.asctime())
+    print("Starting process crsp_industry at time " + time.asctime())
 
     #query1: create table permno0
     #        select from crsp_desnames

@@ -3,7 +3,7 @@ import utils
 from query_storage import query_storage
 
 def comp_sic_naics(conn,cursor,out,ff_num):
-    queries=query_storage.query_bank["comp_hgics"]
+    queries=query_storage.query_bank["comp_sic_naics"]
     util_funcs = utils.utils(conn, cursor)
     executor=utils.executor(conn,cursor)
     print("Starting processing comp_sic_naics at time " + time.asctime())

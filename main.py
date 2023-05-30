@@ -16,8 +16,11 @@ from helper_func import prepare_helper_func
 from unify_datatype import unify_datatype
 from compustat_fx import compustat_fx
 from combine_crsp_comp_sf import combine_crsp_comp_sf
-
-
+from crsp_industry import crsp_industry
+from comp_industry import comp_industry
+from query_storage import query_storage
+from ff_ind_class import ff_ind_class
+from nyse_size_cutoffs import nyse_size_cutoffs
 
 class main():
     def run_all_procedures(self):
@@ -35,6 +38,7 @@ class main():
         cursor=conn.cursor()
         util_funcs = utils.utils(conn, cursor)
         executor = utils.executor(conn, cursor)
+        queries = query_storage.query_bank["ff_ind_class"]
 
         # #download data
         # pull_raw_wrds(config.datasets,db,conn,cursor)
@@ -56,6 +60,30 @@ class main():
         combine_crsp_comp_sf(conn,cursor,out_msf="world_msf1",out_dsf="world_dsf",
                              crsp_msf="crsp_msf",comp_msf="comp_msf",crsp_dsf="crsp_dsf",comp_dsf="comp_dsf")
         util_funcs.delete_table(["comp_dsf","crsp_dsf","comp_msf","crsp_msf"])
+
+        #add industry code for crsp
+        crsp_industry(conn,cursor,"crsp_ind")
+        comp_industry(conn,cursor,"comp_ind")
+
+        #create table world_msf2
+        executor.execute_and_commit(queries["query1"])
+        util_funcs.delete_table(["world_msf1","crsp_ind","comp_ind"])
+
+        #add a column ff49 with Fama-French industry classification
+        ff_ind_class(conn,cursor,49,"world_msf3")
+
+        #size cutoff
+        nyse_size_cutoffs(conn,cursor,"world_msf3","nyse_cutoffs")
+
+        #classify stocks into size groups
+        executor.execute_and_commit(queries["query2"])
+        util_funcs.delete_table(["world_msf2","world_msf3"])
+
+        #
+
+
+
+
 
 if __name__=="__main__":
     main_program=main()

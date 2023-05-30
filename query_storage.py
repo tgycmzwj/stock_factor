@@ -57,7 +57,7 @@ class query_storage:
 			                ELSE 'nano'
 		                END AS size_grp, a.*
 	                    FROM world_msf3 AS a 
-	                    LEFT JOIN scratch.nyse_cutoffs AS b
+	                    LEFT JOIN nyse_cutoffs AS b
 	                    ON a.eom=b.eom;""",
             "query3":"""CREATE TABLE world_data_prelim AS
                         SELECT a.*, b.*, c.*
@@ -78,7 +78,7 @@ class query_storage:
             "query5":"""CREATE TABLE world_data4 AS 
                         SELECT a.*, b.qmj, b.qmj_prof, b.qmj_growth, b.qmj_safety
 	                    FROM world_data3 AS a 
-	                    LEFT JOIN scratch.qmj AS b
+	                    LEFT JOIN qmj AS b
 	                    ON a.excntry=b.excntry AND a.id=b.id AND a.eom=b.eom;""",
         },
 
@@ -1032,7 +1032,7 @@ class query_storage:
                         SELECT *, INTCK_(lagdate,date,'day','discrete') AS diff
 		                FROM join3
 		                WHERE gap = 1;""",
-            "query7":"""CREATE TABLE joined1 AS 
+            "query5":"""CREATE TABLE joined1 AS 
                         SELECT *
                         FROM join1
                         JOIN gap3 
@@ -1792,7 +1792,7 @@ class query_storage:
         "nyse_size_cutoff":{
             "query1":"""CREATE TABLE nyse_stocks AS
                         SELECT *
-                        FROM your_table_name
+                        FROM {table}
                         WHERE crsp_exchcd=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND common=1 AND me IS NOT NULL
                         ORDER BY eom;""",
             "query2":"""SELECT eom, COUNT(me) as n, 
