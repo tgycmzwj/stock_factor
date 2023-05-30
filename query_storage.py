@@ -1063,20 +1063,16 @@ class query_storage:
                         SELECT *,coalesce(gvkeya, gvkeyb) AS gvkey, coalesce(datea, dateb) AS date,
                             coalesce(sica, sicb) AS sic, coalesce(naicsa, naicsb) AS naics
                         FROM comp4;""",
-            "query6":"""CREATE TABLE comp5_sorted AS
-                        SELECT *
-                        FROM comp5
-                        ORDER BY gvkey,date DESC;""",
-            "query7":"""CREATE TABLE comp6 AS
+            "query6":"""CREATE TABLE comp6 AS
                         SELECT *,LAG(date) OVER (GROUP BY gvkey ORDER BY gvkey,date DESC) AS date_l,
                             NULL AS valid_to
-                        FROM comp5_sorted;""",
-            "query8":"""UPDATE comp6
+                        FROM comp5;""",
+            "query7":"""UPDATE comp6
                         SET valid_to=
                         CASE WHEN date_l IS NOT NULL THEN INTNX_('day',date_l,-1)
                              ELSE date 
                         END;""",
-            "query9":"""CREATE TABLE comp7 AS
+            "query8":"""CREATE TABLE comp7 AS
                         SELECT *,INTCK_('day',date,valid_to,'discrete') AS comp_diff
                         ORDER BY gvkey,date,valid_to;""",
         },

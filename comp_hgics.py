@@ -2,7 +2,7 @@ import time
 import utils
 from query_storage import query_storage
 
-def compustat_fx(conn,cursor,lib,out):
+def comp_hgics(conn,cursor,lib,out):
     queries=query_storage.query_bank["comp_hgics"]
     util_funcs = utils.utils(conn, cursor)
     executor=utils.executor(conn,cursor)

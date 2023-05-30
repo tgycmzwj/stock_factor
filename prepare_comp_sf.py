@@ -202,7 +202,7 @@ def prepare_comp_sf(conn,cursor,freq="m"):
             scale=1
         # #query90: create table __comp_sf4
         #           join table __comp_sf3, crsp_mcti, ff_factors_monthly
-        executor.execute_and_commit(queries["query90"].format(scale=scale))
+        # executor.execute_and_commit(queries["query90"].format(scale=scale))
 
         comp_exchanges(conn,cursor,"__exchanges")
     #
