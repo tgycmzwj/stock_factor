@@ -392,6 +392,8 @@ class chars_config:
                 #Financing Cash Flow
                 "eqbb_x","eqis_x","div_x","eqpo_x",
                 "capx be_x"]
-    special_exchanges=[0,1,2,3,4,15, 16,17,18,21,13,19,20,127,150,157,229,263,269,281,283,290,320,326,341,342,347,348,349,352]
+    special_exchanges=["0","1","2","3","4","15","16","17","18","21","13",
+                       "19","20","127","150","157","229","263","269","281",
+                       "283","290","320","326","341","342","347","348","349","352"]
     cols_lag=["comp_exchg","crsp_exchcd","exch_main","obs_main","common","primary_sec",
               "excntry","size_grp","me","be_me","at_gr1","niq_be",]
