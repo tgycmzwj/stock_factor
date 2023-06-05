@@ -10,7 +10,7 @@ def comp_hgics(conn,cursor,lib,out):
 
     #query1: create table gic1
     #        select from comp_{lib}
-    executor.execute_and_commit(queries["query1"].format(lib))
+    executor.execute_and_commit(queries["query1"].format(lib=lib))
     util_funcs.sort_table(table="gic1",sortvar="gvkey,indfrom")
 
     #query2: create table gic2

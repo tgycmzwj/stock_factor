@@ -12,3 +12,18 @@ def return_cutoffs(conn,cursor,data,freq,out,crsp_only):
     executor=utils.executor(conn,cursor)
     char_collections=chars_config()
     print("Starting process return_cutoffs at time " + time.asctime())
+
+    if freq=="m":
+        date_var="eom"
+        by_vars="eom"
+    elif freq=="d":
+        date_var="date"
+        by_vars="year,month"
+
+    if crsp_only==1:
+        executor.execute_and_commit(queries["query1"].format(data=data,date_var=date_var))
+    elif crsp_only==0:
+        executor.execute_and_commit(queries["query2"].format(data=data,date_var=date_var))
+
+    if freq=="d":
+

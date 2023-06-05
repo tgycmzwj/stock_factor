@@ -14,10 +14,10 @@ def hgics_join(conn,cursor,out):
 
     # query1: create table gjoin1
     #        join na_hgics and g_hgics
-    executor.execute_and_commit(queries["query1"].format(lib))
+    executor.execute_and_commit(queries["query1"])
     # query2: create table gjoin2
     #        select from gjoin2
-    executor.execute_and_commit(queries["query2"].format(lib))
+    executor.execute_and_commit(queries["query2"])
     #clean up
     util_funcs.delete_column([["gjoin2","na_gvkey"],["gjoin2","na_date"],
                               ["gjoin2","na_gics"],["gjoin2","g_gvkey"],

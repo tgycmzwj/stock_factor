@@ -12,6 +12,6 @@ def ff_ind_class(conn,cursor,ff_grps,out):
     print("Starting process ff_ind_class at time " + time.asctime())
 
     if ff_grps==38:
-        executor.execute_and_commit(queries["query1"].format(out))
+        executor.execute_and_commit(queries["query1"].format(out=out))
     elif ff_grps==49:
-        executor.execute_and_commit(queries["query2"].format(out))
+        executor.execute_and_commit(queries["query2"].format(out=out))
