@@ -84,6 +84,11 @@ class utils(object):
         self.cursor.fetchall()
         print("finishing duplicating records for table {} based on column {} at time {}".format(table_in,num,time.asctime()))
 
+    def expand_records(self,table_in,table_out,id_vars,start_date,end_date,freq="day",new_date_name="date"):
+
+        self.sort_and_remove_duplicates(table_in="__expanded",table_out=table_out,sortvar=id_vars+","+new_date_name,idvar=id_vars+","+new_date_name)
+        self.delete_table(["__expanded"])
+
     def create_index(self,table_name,index_name,column_name):
         query=self.query_bank["create_index"]
         self.cursor.execute(query.format(table_name=table_name,index_name=index_name,column_name=column_name))

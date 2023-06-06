@@ -18,9 +18,11 @@ from compustat_fx import compustat_fx
 from combine_crsp_comp_sf import combine_crsp_comp_sf
 from crsp_industry import crsp_industry
 from comp_industry import comp_industry
+from market_returns import market_returns
 from query_storage import query_storage
 from ff_ind_class import ff_ind_class
 from nyse_size_cutoffs import nyse_size_cutoffs
+from return_cutoffs import return_cutoffs
 
 class main():
     def run_all_procedures(self):
@@ -79,7 +81,13 @@ class main():
         executor.execute_and_commit(queries["query2"])
         util_funcs.delete_table(["world_msf2","world_msf3"])
 
-        #
+        #return cutoffs
+        return_cutoffs(conn,cursor,data="world_msf",freq="m",out="return_cutoffs",crsp_only=0)
+        return_cutoffs(conn,cursor,data="world_dsf",freq="d",out="return_cutoffs_daily",crsp_only=0)
+
+        #market returns
+        market_returns(conn,cursor,out="market_returns",data="world_msf",freq="m",wins_comp=1,wins_data="return_cutoffs")
+        market_returns(conn,cursor,out="market_returns_daily",data="world_dsf",freq="d",wins_comp=1,wins_data="return_cutoffs,daily")
 
 
 

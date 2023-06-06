@@ -1705,32 +1705,12 @@ class query_storage:
     				        LEFT JOIN {wins_data} AS b
     				        ON STRFTIME('%Y-%m',a.date)=STRFTIME('%Y-%m',b.date);""",
             "query5": """UPDATE __common_stocks3
-    			            SET ret = 
+    			            SET {var} = 
     			            CASE 
-    			                WHEN ret>ret_99_9 AND source_crsp=0 AND ret IS NOT NULL THEN ret_99_9
-    			                WHEN reg<ret_0_1 AND source_crsp=0 AND ret IS NOT NULL THEN ret_0_1
-    			                ELSE ret
+    			                WHEN {var}>{var}_99_9 AND source_crsp=0 AND {var} IS NOT NULL THEN {var}_99_9
+    			                WHEN {var}<{var}_0_1 AND source_crsp=0 AND {var} IS NOT NULL THEN {var}_0_1
+    			                ELSE {var}
     			            END;""",
-            "query6": """UPDATE __common_stocks3
-    			            SET ret_local=
-    			            CASE
-    			                WHEN ret_local>ret_local_99_9 AND source_crsp=0 AND ret_local IS NOT NULL THEN ret_local_99_9
-    			                WHEN ret_local<ret_local_0_1 and source_crsp=0 AND ret_local IS NOT NULL THEN ret_local_0_1
-    			                ELSE ret_local
-    			            END;""",
-            "query7": """UPDATE __common_stocks3
-    			            SET ret_exc=ret_exc_99_9
-    			            CASE
-    			                WHEN ret_exc>ret_exc_99_9 AND source_crsp=0 AND ret_exc IS NOT NULL THEN ret_exc_99_9
-    			                WHEN ret_exc<ret_exc_0_1 AND source_crsp=0 AND ret_exc IS NOT NULL THEN ret_exc_0_1
-    			                ELSE ret_exc
-    			            END;""",
-            "query8_1": """ALTER TABLE __common_stocks3 DROP COLUMN ret_exc_0_1;""",
-            "query8_2": """ALTER TABLE __common_stocks3 DROP COLUMN ret_exc_99_9;""",
-            "query8_3": """ALTER TABLE __common_stocks3 DROP COLUMN ret_0_1;""",
-            "query8_4": """ALTER TABLE __common_stocks3 DROP COLUMN ret_99_9;""",
-            "query8_5": """ALTER TABLE __common_stocks3 DROP COLUMN ret_local_0_1;""",
-            "query8_6": """ALTER TABLE __common_stocks3 DROP COLUMN ret_local_99_9;""",
             "query9": """CREATE TABLE mkt1 AS
     		                SELECT excntry,{dt_col},COUNT(*) AS stocks,SUM(me_lag1) AS me_lag1,
     			                SUM(dolvol_lag1) AS dolvol_lag1,SUM(ret_local*me_lag1)/SUM(me_lag1) AS mkt_vw_lcl,
@@ -1744,10 +1724,6 @@ class query_storage:
     			             FROM mkt1
     			             GROUP BY excntry,STRFTIME('%Y-%m',date)
     			             HAVING stocks/MAX(stocks)>=0.25;""",
-            "query11_1": "DROP TABLE IF EXISTS __common_stocks1;",
-            "query11_1": "DROP TABLE IF EXISTS __common_stocks2;",
-            "query11_1": "DROP TABLE IF EXISTS __common_stocks3;",
-            "query11_1": "DROP TABLE IF EXISTS mkt1;",
         },
 
 
@@ -2059,7 +2035,7 @@ class query_storage:
 
         "return_cutoffs":{
             "query1":"""CREATE TABLE base AS 
-                        SELECT *, 
+                        SELECT *
                         FROM {data}
                         WHERE source_crsp=1 AND common=1 AND obs_main=1 AND exch_main=1 AND primary_sec=1 AND excntry!='ZWE' AND ret_exc IS NOT NULL
                         ORDER BY {date_var};""",
@@ -2088,7 +2064,7 @@ class query_storage:
 		  			    SELECT a.*, b.{ret_type}_0_1, b.{ret_type}_1, b.{ret_type}_99, b.{ret_type}_99_9
 		  			    FROM {out} AS a
 		  			    LEFT JOIN cutoffs AS b
-		  			    ON a.year=b.year AND a.month=b.month;"""
+		  			    ON STRFTIME('%Y-%m',a.date)=STRFTIME('%Y-%m',b.date);"""
         },
 
 
@@ -2379,13 +2355,12 @@ class query_storage:
                             ib+COALESCE(xi,0)+COALESCE(do,0) AS ni,
                             NULL AS gp,NULL AS pstkrv,NULL AS pstkl,NULL AS itcb,NULL AS xad,NULL AS txbcof
                         FROM comp_g_funda
-                        WHERE {compcond} AND datadate>={start_date}""",
+                        WHERE {compcond} AND datadate>=DATE({start_date})""",
             "query4":"""CREATE TABLE {aname} AS
 			            SELECT *
 			            FROM g_funda1
 			            GROUP BY gvkey, datadate
 			            HAVING COUNT(*)=1 or (COUNT(*)=2 AND indfmt='INDL');""",
-			"query5":"""ALTER TABLE {aname} DROP COLUMN indfmt;""",
             "query6":"""CREATE TABLE g_fundq1 AS 
                         SELECT *,'GLOBAL' AS source, ibq+COALESCE(xiq,0) AS niq,
                             ppentq+dpactq AS ppegtq,NULL AS icaptq,NULL AS niy,NULL AS txditcq,
@@ -2398,7 +2373,6 @@ class query_storage:
 			            FROM g_fundq1
 			            GROUP BY gvkey, datadate
 			            HAVING COUNT(*)=1 or (COUNT(*)=2 AND indfmt='INDL');""",
-			"query8":"""ALTER TABLE {qname} DROP indfmt;""",
             "query9":"""CREATE TABLE {aname} AS 
                         SELECT gvkey,datadate,curcd,{keep_list},'NA' AS source
                         FROM comp_funda
@@ -2407,6 +2381,12 @@ class query_storage:
                          SELECT gvkey,datadate,fyr,fyearq,fqtr,curcdq,{keep_list},'NA' AS source
                          FROM comp_funda
                          WHERE {compconda} AND datadate>={start_date};""",
+            "query10_5":"""CREATE TABLE {combine} AS
+                           SELECT * 
+                           FROM __gfund{freq}
+                           UNION
+                           SELECT *
+                           FROM fund_{freq};""",
             "query11":"""CREATE TABLE __tempa AS
                          SELECT a.*, b.fx
 			             FROM {aname} AS a 
