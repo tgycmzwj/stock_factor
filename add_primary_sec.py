@@ -12,17 +12,17 @@ def add_primary_sec(conn,cursor,data,out,date_var):
     char_collections=chars_config()
     print("Starting process add_primary_sec at time " + time.asctime())
 
-    #query1: create table __prihistrow
-    #        select from comp_g_sec_history
-    executor.execute_and_commit(queries["query1"])
-
-    #query2: create table __prihistrow
-    #        select from comp_sec_history
-    executor.execute_and_commit(queries["query2"])
-
-    #query3: create table __prihistcan
-    #        select from comp_sec_history
-    executor.execute_and_commit(queries["query3"])
+    # #query1: create table __prihistrow
+    # #        select from comp_g_sec_history
+    # executor.execute_and_commit(queries["query1"])
+    #
+    # #query2: create table __prihistrow
+    # #        select from comp_sec_history
+    # executor.execute_and_commit(queries["query2"])
+    #
+    # #query3: create table __prihistcan
+    # #        select from comp_sec_history
+    # executor.execute_and_commit(queries["query3"])
 
     #query4: create table __header
     #        union comp_company and comp_g_company
