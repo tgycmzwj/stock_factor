@@ -9,6 +9,7 @@ import sqlite3
 #project dependencies
 import utils
 from macro_config import macro_config
+from chars_config import chars_config
 from pull_raw_wrds import pull_raw_wrds
 from prepare_crsp_sf import prepare_crsp_sf
 from prepare_comp_sf import prepare_comp_sf
@@ -23,11 +24,14 @@ from query_storage import query_storage
 from ff_ind_class import ff_ind_class
 from nyse_size_cutoffs import nyse_size_cutoffs
 from return_cutoffs import return_cutoffs
+from standardized_accounting_data import standardized_accounting_data
+from combine_ann_qtr_chars import combine_ann_qtr_chars
 
 class main():
     def run_all_procedures(self):
         #obtain configuration for the program
         config=macro_config()
+        chars=chars_config()
 
         ##connect to wrds terminal
         #db=wrds.Connection(wrds_username=config.wrds_username)
@@ -89,6 +93,26 @@ class main():
         market_returns(conn,cursor,out="market_returns",data="world_msf",freq="m",wins_comp=1,wins_data="return_cutoffs")
         market_returns(conn,cursor,out="market_returns_daily",data="world_dsf",freq="d",wins_comp=1,wins_data="return_cutoffs,daily")
 
+        #create characteristics based on accounting data
+        standardized_accounting_data(conn,cursor,coverage="world",convert_to_usd=1,me_data="world_msf",include_helpers_vars=1,start_date="1949-12-31")
+
+        combine_ann_qtr_chars(out="acc_chars_world",ann_data="achars_world",qtr_data="qchars_world",__char_vars=chars.acc_chars,q_suffix="_qitem")
+
+
+
+
+
+        #combine returns, accounting and monthly market data
+        executor.execute_and_commit(queries["query3"])
+        util_funcs.delete_column([["world_data_prelim","div_tot"],
+                                  ["world_data_prelim","div_cash"],
+                                  ["world_data_prelim","div_spc"],
+                                  ["world_data_prelim","public_date"],
+                                  ["world_data_prelim","source"]])
+
+        #asset pricing factors
+
+        #create monthly and daily factors from ff3 and hxz4
 
 
 

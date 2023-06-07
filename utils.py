@@ -85,9 +85,18 @@ class utils(object):
         print("finishing duplicating records for table {} based on column {} at time {}".format(table_in,num,time.asctime()))
 
     def expand_records(self,table_in,table_out,id_vars,start_date,end_date,freq="day",new_date_name="date"):
-
+        query=self.query_bank["expand1"]
+        self.cursor.execute(query.format(table_in=table_in,table_out="temp1",start_date=start_date,end_date=end_date,freq="month"))
+        self.cursor.fetchall()
+        self.conn.commit()
+        query=self.query_bank["expand2"]
+        self.cursor.execute(query.format(table_in="temp1",table_out="temp2",start_date=start_date,i="value",freq="month"))
+        self.cursor.fetchall()
+        self.conn.commit()
+        self.duplicate_records(table_in="temp2",table_out="__expanded",num="nnum")
         self.sort_and_remove_duplicates(table_in="__expanded",table_out=table_out,sortvar=id_vars+","+new_date_name,idvar=id_vars+","+new_date_name)
-        self.delete_table(["__expanded"])
+        self.delete_table(["__expanded","temp1","temp2"])
+        self.delete_column([[table_out,start_date],[table_out,end_date],[table_out,"value"],[table_out,"nnum"]])
 
     def create_index(self,table_name,index_name,column_name):
         query=self.query_bank["create_index"]

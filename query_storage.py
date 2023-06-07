@@ -29,6 +29,12 @@ class query_storage:
                               SELECT value + 1 
                               FROM counter LIMIT (SELECT MAX({num}) FROM {table_in}))
                               SELECT * FROM {table_in} JOIN counter ON value <= {num}""",
+            "expand1":"""CREATE TABLE {table_out} AS 
+                        SELECT *, INTCK_({start_date},{end_date},{freq}) AS nnum
+                        FROM {table_in};""",
+            "expand2":"""CREATE TABLE {table_out} AS 
+                         SELECT *, INTNX_({start_date}, {i}, '{freq}', 'end') AS {new_date_name}
+                         FROM {table_in}""",
             "create_index":"""CREATE INDEX {index_name} ON {table_name}({column_name});""",
             "drop_index":"""DROP INDEX {index_name};""",
             "change_column_type":"""CREATE TABLE {table_name}_new AS 
@@ -412,20 +418,12 @@ class query_storage:
                                 CASE WHEN b.gvkey IS NOT NULL THEN 1 ELSE 0 END AS data_available
                             FROM __comp_dates2 AS a
                             LEFT JOIN {data} AS b ON a.gvkey=b.gvkey AND a.curcd=b.curcd AND a.datadate=b.datadate;""",
-            "query3": """CREATE TABLE __helpers1_sorted AS 
-                            SELECT * FROM (
-                            SELECT *, ROW_NUMBER() OVER (
-                                PARTITION BY gvkey,curcd,datadate 
-                                ORDER BY gvkey,curcd,datadate) 
-                                AS row_number    
-                            FROM __helpers1) 
-                            AS rows WHERE row_number = 1;""",
             "query4": """CREATE TABLE __helpers2 AS 
                             SELECT *, ROW_NUMBER() OVER (
                                 PARTITION BY gvkey,curcd
                                 ORDER BY gvkey,curcd
                             ) AS count
-                            FROM __helpers1_sorted;""",
+                            FROM __helpers1;""",
             "query5": """UPDATE __helpers2
     		                SET {variable} = 
     			            CASE 
@@ -509,11 +507,6 @@ class query_storage:
                             ocf_x-capx as fcf_x,
                             bitda_x + coalesce(xrd, 0) - oacc_x as cop_x
                             FROM __helpers2""",
-            "query7": """ALTER TABLE {out} DROP COLUMN count;""",
-            "query8_1": """DROP TABLE IF EXISTS __comp_dates1;""",
-            "query8_2": """DROP TABLE IF EXISTS __comp_dates2;""",
-            "query8_3": """DROP TABLE IF EXISTS __helpers1;""",
-            "query8_4": """DROP TABLE IF EXISTS __helpers2;""",
         },
 
 
@@ -606,16 +599,12 @@ class query_storage:
                         SELECT id, eom, size_grp, excntry, me, market_equity, be_me, at_gr1, niq_be,
 			                source_crsp, exch_main, obs_main, common, comp_exchg, crsp_exchcd, primary_sec, ret_lag_dif
 		                FROM {mchars};""",
-            "query4":"""CREATE TABLE base2 AS 
-                        SELECT * 
-                        FROM base1
-                        ORDER BY id,eom;""",
             "query5":"""CREATE TABLE base3 AS 
                         SELECT *,{new_cols},
                             LAG(id) OVER(PARITION BY id,eom ORDER BY id,eom) AS id_l,
                             LAG(eom) OVER(PARITION BY id,eom ORDER BY id,eom) AS eom_l,
                             LAG(source_crsp) OVER(PARITION BY id,eom ORDER BY id,eom) AS srouce_crsp_l
-                        FROM base2""",
+                        FROM base1""",
             "query6":"""UPDATE base3
                         SET {col}_l=
                         CASE WHEN id!=LAG(id) OR source_crsp!=source_crsp_l OR INTCK_(eom_l,eom,'month','discrete') THEN NULL
@@ -631,62 +620,6 @@ class query_storage:
 		                FROM base3
 		                WHERE obs_main_l=1 AND exch_main_l=1 AND common_l=1 AND primary_sec_l=1 AND ret_lag_dif=1 AND me_l IS NOT NULL
 		                ORDER BY excntry_l, size_grp_l, eom;""",
-
-            "query10":"""CREATE TABLE bp_stocks AS
-			             SELECT *
-			             FROM base4
-			             WHERE ((size_grp_l IN ('small','large','mega') AND excntry_l!='USA') OR ((crsp_exchcd_l=1 OR comp_exchg_l=11) AND excntry_l='USA')) and {char}_l IS NOT NULL
-			             ORDER BY eom, excntry_l;""",
-            "query11":"""CREATE TABLE bps AS
-                         SELECT eom, excntry_l, COUNT(*) AS n,
-                             percentile_cont(0.3) within group (order by {char}_l) AS bp_p30,
-                             percentile_cont(0.7) within group (order by {char}_l) AS bp_p70
-                         FROM bp_stocks
-                         GROUP BY eom, excntry_l;""",
-            "query12":"""CREATE TABLE weights1 AS
-			             SELECT a.excntry_l, a.id, a.eom, a.size_pf, a.me_l,
-				             CASE
-					             WHEN a.{char}_l >= b.bp_p70 THEN 'high'
-					             WHEN a.{char}_l >= b.bp_p30 THEN 'mid'
-					             ELSE 'low'
-				             END AS char_pf
-			             FROM base4 AS a 
-			             LEFT JOIN bps AS b
-			             ON a.excntry_l = b.excntry_l AND a.eom = b.eom
-			             WHERE b.n>={min_stocks_bp} AND a.{char}_l IS NOT NULL AND size_pf!='';""",
-			"query13":"""CREATE TABLE weights2 AS
-			             SELECT *, me_l/SUM(me_l) AS w
-			             FROM weights1
-			             GROUP BY excntry_l, size_pf, char_pf, eom
-			             HAVING COUNT(*)>={min_stocks_pf};""",
-            "query14":"""CREATE TABLE returns AS
-			             SELECT a.*, b.w, b.size_pf, b.char_pf
-			             FROM world_sf2 AS a 
-			             INNER JOIN weights2 AS b
-			             ON a.id = b.id AND a.eom=b.eom AND a.excntry=b.excntry_l;""",
-            "query15":"""CREATE TABLE pfs1 AS
-			             SELECT {char} AS characteristic, excntry, size_pf, char_pf, {__date_col}, SUM(ret_exc*w) AS ret_exc
-			             FROM returns
-			             GROUP BY excntry, size_pf, char_pf, {__date_col};""",
-            "query16":"""CREATE TABLE pfs2 AS 
-                         SELECT * 
-                         FROM pfs1
-                         ORDER BY characteristic excntry {__date_col};""",
-            "query17":"""CREATE TABLE pfs3 AS
-                         SELECT characteristic, excntry,
-                             SUBSTR(column_name, 1, INSTR(column_name, '_') - 1) AS size_pf,
-                             SUBSTR(column_name, INSTR(column_name, '_') + 1) AS char_pf,
-                             CAST(GROUP_CONCAT(ret_exc, '|') AS TEXT) AS ret_exc
-                         FROM (
-                             SELECT characteristic,excntry,size_pf || '_' || char_pf AS column_name,ret_exc
-                             FROM pfs2)
-                         GROUP BY characteristic, excntry, column_name;""",
-            "query18":"""CREATE TABLE {out} AS 
-                         SELECT characteristic, excntry, {__date_col}, 
-                             (small_high+big_high)/2-(small_low+big_low)/2 AS lms, 
-                             (small_high+small_mid+small_low)/3-(big_high+big_mid+big_low)/3 AS smb
-                         FROM pfs3;
-                         """,
             "query19":"""CREATE TABLE hxz1 AS
                          SELECT * 
                          FROM asset_growth
@@ -718,6 +651,7 @@ class query_storage:
 		                 LEFT JOIN hxz AS c 
 		                 ON a.excntry = c.excntry AND a.{__date_col} = c.{__date_col};"""
         },
+
 
 
 
@@ -857,12 +791,9 @@ class query_storage:
 		                FROM {ann_data} AS a 
 		                LEFT JOIN {qtr_data} AS b
 		                ON a.gvkey=b.gvkey AND a.public_date=b.public_date;""",
-            "query2":"""CREATE TABLE __acc_chars2 AS
-                        SELECT *
-                        FROM __acc_chars1;""",
-            "query3":"""UPDATE __acc_chars2
+            "query2":"""UPDATE __acc_chars1
                         SET {ann_var}=
-                            CASE WHEN {ann_var} IS NULL OR ({qtr_var} IS NOT NULL AND datadate&{q_suffix}>datadate) THEN {qtr_var}
+                            CASE WHEN {ann_var} IS NULL OR ({qtr_var} IS NOT NULL AND datadate{q_suffix}>datadate) THEN {qtr_var}
                                  ELSE {ann_var}
                             END;"""
         },
@@ -2335,6 +2266,68 @@ class query_storage:
 
 
 
+        "sort_ff_style":{
+            "query1": """CREATE TABLE bp_stocks AS
+    			             SELECT *
+    			             FROM base4
+    			             WHERE ((size_grp_l IN ('small','large','mega') AND excntry_l!='USA') OR ((crsp_exchcd_l=1 OR comp_exchg_l=11) AND excntry_l='USA')) and {char}_l IS NOT NULL
+    			             ORDER BY eom, excntry_l;""",
+            "query2": """CREATE TABLE bps AS
+                             SELECT eom, excntry_l, COUNT(*) AS n,
+                                 percentile_cont(0.3) within group (order by {char}_l) AS bp_p30,
+                                 percentile_cont(0.7) within group (order by {char}_l) AS bp_p70
+                             FROM bp_stocks
+                             GROUP BY eom, excntry_l;""",
+            "query3": """CREATE TABLE weights1 AS
+    			             SELECT a.excntry_l, a.id, a.eom, a.size_pf, a.me_l,
+    				             CASE
+    					             WHEN a.{char}_l >= b.bp_p70 THEN 'high'
+    					             WHEN a.{char}_l >= b.bp_p30 THEN 'mid'
+    					             ELSE 'low'
+    				             END AS char_pf
+    			             FROM base4 AS a 
+    			             LEFT JOIN bps AS b
+    			             ON a.excntry_l = b.excntry_l AND a.eom = b.eom
+    			             WHERE b.n>={min_stocks_bp} AND a.{char}_l IS NOT NULL AND size_pf!='';""",
+            "query4": """CREATE TABLE weights2 AS
+    			             SELECT *, me_l/SUM(me_l) AS w
+    			             FROM weights1
+    			             GROUP BY excntry_l, size_pf, char_pf, eom
+    			             HAVING COUNT(*)>={min_stocks_pf};""",
+            "query5": """CREATE TABLE returns AS
+    			             SELECT a.*, b.w, b.size_pf, b.char_pf
+    			             FROM world_sf2 AS a 
+    			             INNER JOIN weights2 AS b
+    			             ON a.id = b.id AND a.eom=b.eom AND a.excntry=b.excntry_l;""",
+            "query6": """CREATE TABLE pfs1 AS
+    			             SELECT {char} AS characteristic, excntry, size_pf, char_pf, {__date_col}, SUM(ret_exc*w) AS ret_exc
+    			             FROM returns
+    			             GROUP BY excntry, size_pf, char_pf, {__date_col};""",
+            "query7": """CREATE TABLE pfs2 AS 
+                             SELECT * 
+                             FROM pfs1
+                             ORDER BY characteristic excntry {__date_col};""",
+            "query8": """CREATE TABLE pfs3 AS
+                             SELECT characteristic, excntry,
+                                 SUBSTR(column_name, 1, INSTR(column_name, '_') - 1) AS size_pf,
+                                 SUBSTR(column_name, INSTR(column_name, '_') + 1) AS char_pf,
+                                 CAST(GROUP_CONCAT(ret_exc, '|') AS TEXT) AS ret_exc
+                             FROM (
+                                 SELECT characteristic,excntry,size_pf || '_' || char_pf AS column_name,ret_exc
+                                 FROM pfs2)
+                             GROUP BY characteristic, excntry, column_name;""",
+            "query9": """CREATE TABLE {out} AS 
+                             SELECT characteristic, excntry, {__date_col}, 
+                                 (small_high+big_high)/2-(small_low+big_low)/2 AS lms, 
+                                 (small_high+small_mid+small_low)/3-(big_high+big_mid+big_low)/3 AS smb
+                             FROM pfs3;
+                             """,
+        },
+
+
+
+
+
         "standardized_accounting_data":{
             "query1":"""SELECT DISTINCT LOWER(name) AS qvars_q
                         FROM pragma_table_info('COMP_FUNDQ') 
@@ -2486,10 +2479,6 @@ class query_storage:
                                  WHEN {var}>{var}_higher AND {var} IS NOT NULL AND {var}_lower IS NOT NULL THEN {var}_higher
                                  ELSE {var}
                             END;""",
-            "query4_1":"""DROP TABLE IF EXISTS {inset};""",
-            "query4_2":"""DROP TABLE IF EXISTS {inset}_percentile;""",
-            "query5_1":"""ALTER TABLE {outset} DROP COLUMN {var}_lower;""",
-            "query5_2":"""ALTER TABLE {outset} DROP COLUMN {var}_higher;""",
         },
 
 
