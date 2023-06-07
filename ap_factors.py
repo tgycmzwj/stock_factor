@@ -3,6 +3,7 @@ from query_storage import query_storage
 import utils
 from chars_config import chars_config
 from winsorize_own import winsorize_own
+from sort_ff_style import sort_ff_style
 
 def ap_factors(conn,cursor,out,freq,sf,mchars,mkt,min_stocks_bp,min_stocks_pf):
     # initiate utilities
@@ -30,6 +31,20 @@ def ap_factors(conn,cursor,out,freq,sf,mchars,mkt,min_stocks_bp,min_stocks_pf):
         executor.execute_and_commit(queries["query6"].format(col=col))
     util_funcs.delete_column([["base3",col] for col in chars.cols_lag])
     executor.execute_and_commit(queries["query7"])
+
+    sort_ff_style(conn,cursor,out="book_to_market",char="be_me",min_stocks_bp=min_stocks_bp,min_stocks_pf=min_stocks_pf)
+    sort_ff_style(conn,cursor,out="asset_growth",char="at_gr1",min_stocks_bp=min_stocks_bp,min_stocks_pf=min_stocks_pf)
+    sort_ff_style(conn,cursor,out="roeq",char="niq_be",min_stocks_bp=min_stocks_bp,min_stocks_pf=min_stocks_pf)
+
+    util_funcs.rename_table([["book_to_market","ff"]])
+    util_funcs.rename_column([["ff","lms","hml"],["ff","smb","smb_ff"]])
+
+    executor.execute_and_commit(queries["query19"])
+    executor.execute_and_commit(queries["query20"])
+    executor.execute_and_commit(queries["query21"])
+    executor.execute_and_commit(queries["query29"])
+    executor.execute_and_commit(queries["query30"].format(out=out,__date_col=__date_col,mkt=mkt))
+
 
 
 

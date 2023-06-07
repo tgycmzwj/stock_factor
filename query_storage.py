@@ -626,19 +626,16 @@ class query_storage:
                          UNION
                          SELECT *
                          FROM roeq;""",
-            "query19_1":"""CREATE TABLE hxz2 AS 
+            "query20":"""CREATE TABLE hxz2 AS 
                            SELECT characteristic, excntry,
                                MAX(CASE WHEN __date_col = 'lms' THEN lms END) AS lms,
                                MAX(CASE WHEN __date_col = 'smb' THEN smb END) AS smb
                            FROM hxz1
                            GROUP BY characteristic, excntry;""",
-            "query20":"""CREATE TABLE ff AS 
-                         SELECT * 
-                         FROM book_to_market;""",
             "query21":"""CREATE TABLE hxz4 AS
                          SELECT excntry, __date_col,
                              MAX(CASE WHEN characteristic = 'col1' THEN col1 END) AS col1
-                         FROM hxz3
+                         FROM hxz2
                          GROUP BY excntry, __date_col;""",
             "query29":"""CREATE TABLE hxz AS 
                          SELECT *,(at_gr1_smb+niq_be_smb)/2 AS smb+hxz,-at_gr1_lms AS inv
@@ -1419,7 +1416,7 @@ class query_storage:
 
 
 
-        "firms_age":{
+        "firm_age":{
             "query1":"""CREATE TABLE crsp_age1 AS
                         SELECT permco, MIN(date) AS crsp_first
                         FROM crsp_msf
@@ -1433,17 +1430,21 @@ class query_storage:
                         FROM comp_acc_age1
                         GROUP BY gvkey;""",
             "query4":"""UPDATE comp_acc_age2
-                        SET comp_acc_first = strftime('%Y%m%d', date(comp_acc_first, '-1 year'))""",
-            "query5":"""CREATE TABLE comp_acc_age1 AS 
-                        SELECT gvkey, datadate FROM comp_funda 
+                        SET comp_acc_first = INTNX_(comp_acc_first,-1,'year','end')""",
+
+            "query5":"""CREATE TABLE comp_ret_age1 AS 
+                        SELECT gvkey, datadate FROM comp_secm 
                         UNION 
-                        SELECT gvkey, datadate FROM comp_g_funda;""",
-            "query6":"""CREATE TABLE comp_acc_age2 AS 
-                        SELECT gvkey, MIN(datadate) AS comp_acc_first 
-                        FROM comp_acc_age1 
+                        SELECT gvkey, datadate FROM comp_g_secd WHERE monthend=1;""",
+            "query6":"""CREATE TABLE comp_ret_age2 AS 
+                        SELECT gvkey, MIN(datadate) AS comp_ret_first 
+                        FROM comp_ret_age1 
                         GROUP BY gvkey;""",
-            "query7":"""UPDATE comp_acc_age2 
-                        SET comp_acc_first = date(comp_acc_first, '-1 year'); """,
+            "query7":"""UPDATE comp_ret_age2 
+                        SET comp_ret_first = INTNX_(comp_ret_first,-1,'year','end'); """,
+
+
+
             "query8":"""CREATE TABLE comb1 AS
                         SELECT a.id, a.eom, MIN(b.crsp_first, c.comp_acc_first, d.comp_ret_first) AS first_obs
                         FROM {data} AS a
@@ -1455,10 +1456,8 @@ class query_storage:
                         FROM comb1
                         GROUP BY id;""",
             "query10":"""CREATE TABLE comb3 AS
-                         SELECT *, (JULIANDAY(MIN(first_obs,first_alt))-JULIANDAY(emo))/30 AS age
+                         SELECT *, INTCK(min(first_obs,first_alt),eom,'month') AS age
                          FROM comb2;""",
-            "query11_1":"""ALTER TABLE comb3 DROP COLUMN first_obs;""",
-            "query11_2":"""ALTER TABLE comb3 DROP COLUMN first_alt;""",
             "query12":"""CREATE TABLE {out} AS 
                          SELECT * 
                          FROM comb3
@@ -1664,7 +1663,7 @@ class query_storage:
             "query1": """CREATE TABLE chars1 AS 
                             SELECT id, eom, excntry, chcsho_12m, eqnpo_12m, oaccruals_at, noa_at, at_gr1, 
                                 ppeinv_gr1a, o_score, ret_12_1, gp_at, niq_at
-                            FROM data
+                            FROM {data}
                             WHERE common=1 AND primary_sec=1 AND obs_main=1 AND exch_main = 1 AND ret_exc IS NOT NULL AND me IS NOT NULL
                             ORDER BY excntry, eom;""",
             "query2": """CREATE TEMP TABLE __subset AS
@@ -1672,14 +1671,14 @@ class query_storage:
                             FROM chars1
                             GROUP BY excntry, eom
                             HAVING COUNT({v}) >= {min_stks};""",
-            "query3": """CREATE TABLE chars{nums1} AS 
+            "query3": """CREATE TABLE __ranks AS
+                            SELECT excntry, id, eom, RANK() OVER (PARTITION BY excntry, eom ORDER BY {__v} {__sort}) AS rank_{__v}
+                            FROM __subset;""",
+            "query4": """CREATE TABLE chars{nums1} AS 
                             SELECT a.*, b.rank_{v}
                             FROM chars{nums2} AS a
                             LEFT JOIN __ranks AS b 
                             ON a.id=b.id AND a.eom=b.eom;""",
-            "query4":"""CREATE TABLE __ranks AS
-                        SELECT excntry, id, eom, RANK() OVER (PARTITION BY excntry, eom ORDER BY {__v}) AS rank_{__v}
-                        FROM __subset;""",
             "query5":"""CREATE TABLE {out} AS
                         SELECT id, eom,
                             CASE WHEN COUNT(*)-COUNT(rank_o_score)>{min_fcts} THEN NULL

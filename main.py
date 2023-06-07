@@ -8,6 +8,7 @@ import sqlite3
 
 #project dependencies
 import utils
+from ap_factors import ap_factors
 from macro_config import macro_config
 from chars_config import chars_config
 from pull_raw_wrds import pull_raw_wrds
@@ -26,6 +27,7 @@ from nyse_size_cutoffs import nyse_size_cutoffs
 from return_cutoffs import return_cutoffs
 from standardized_accounting_data import standardized_accounting_data
 from combine_ann_qtr_chars import combine_ann_qtr_chars
+from firm_age import firm_age
 
 class main():
     def run_all_procedures(self):
@@ -111,8 +113,13 @@ class main():
                                   ["world_data_prelim","source"]])
 
         #asset pricing factors
-
         #create monthly and daily factors from ff3 and hxz4
+        ap_factors(conn,cursor,out="ap_factors_daily",freq="d",sf="world_dsf",mchars="world_data_prelim",mkt="market_returns_daily",min_stocks_bp=10,min_stocks_pf=3)
+        ap_factors(conn,cursor,out="ap_factors_monthly",freq="m",sf="world_msf",mchars="world_data_prelim",mkt="market_returns",min_stocks_bp=10,min_stocks_pf=3)
+
+        #factor based on combined data
+        firm_age(conn,cursor,data="world_msf",out="firm_age")
+
 
 
 
