@@ -42,7 +42,13 @@ class query_storage:
                                     FROM {table_name};""",
             "list_index":"""SELECT * FROM sqlite_master WHERE type='index';""",
             "list_table":"""SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name;""",
-            "list_column":"""PRAGMA table_info({table_name})"""
+            "list_column":"""PRAGMA table_info({table_name})""",
+            "union_table":"""CREATE TABLE {table_out} AS 
+                             SELECT *
+                             FROM {table1}
+                             UNION
+                             SELECT *
+                             FROM {table2};"""
         },
 
 
@@ -669,30 +675,33 @@ class query_storage:
 		                ON a.excntry=b.excntry AND a.date=b.date
 		                WHERE b.mkt_vw_exc IS NOT NULL
 		                ORDER BY id, date;""",
-            "query2":"""CREATE TABLE __dsf2 AS 
-                        SELECT *, NULL AS prc_low_r, NULL AS prc_high_r 
-                        FROM __dsf1;""",
-            "query3":"""UPDATE __dsf2 AS t
-                        SET prc_low_in = prc_low,
-                            prc_high_in = prc_high,
-                            hlreset = 0,
-                            prc_high = CASE WHEN bidask = 1 OR prc_low = prc_high OR prc_low <= 0 OR prc_high <= 0 OR tvol = 0 THEN NULL ELSE prc_high END,
-                            prc_low = CASE WHEN bidask = 1 OR prc_low = prc_high OR prc_low <= 0 OR prc_high <= 0 OR tvol = 0 THEN NULL ELSE prc_low END,
-                            prc_low_r = CASE WHEN first.id THEN NULL ELSE prc_low_r END,
-                            prc_high_r = CASE WHEN first.id THEN NULL ELSE prc_high_r END,
-                            hlreset = CASE WHEN 0 < prc_low < prc_high THEN 1
-                                           WHEN prc_low_r <= prc AND prc <= prc_high_r THEN 1
-                                           WHEN prc < prc_low_r THEN 2
-                                           WHEN prc > prc_high_r THEN 3
-                                           ELSE hlreset END,
-                            prc_low = CASE WHEN prc_low ^= 0 AND prc_high / prc_low > 8 THEN NULL ELSE prc_low END,
-                            prc_high = CASE WHEN prc_low ^= 0 AND prc_high / prc_low > 8 THEN NULL ELSE prc_high END;""",
+            "query3":"""UPDATE __dsf1 
+                        SET prc_low_in=prc_low,
+                            prc_high_in=prc_high,
+                            hlreset=0,
+                            prc_high=CASE WHEN bidask=1 OR prc_low=prc_high OR prc_low<=0 OR prc_high<=0 OR tvol=0 THEN NULL 
+                                          ELSE prc_high END,
+                            prc_low=CASE WHEN bidask=1 OR prc_low=prc_high OR prc_low<=0 OR prc_high<=0 OR tvol=0 THEN NULL 
+                                           ELSE prc_low END,
+                            prc_low_r=CASE WHEN iid_temp=1 THEN NULL 
+                                             ELSE prc_low_r END,
+                            prc_high_r=CASE WHEN iid_temp=1 THEN NULL 
+                                              ELSE prc_high_r END,
+                            hlreset=CASE WHEN 0<prc_low<prc_high THEN 1
+                                         WHEN prc_low_r<=prc AND prc<=prc_high_r THEN 1
+                                         WHEN prc<prc_low_r THEN 2
+                                         WHEN prc>prc_high_r THEN 3
+                                         ELSE hlreset END,
+                            prc_low=CASE WHEN prc_low!=0 AND prc_high/prc_low>8 THEN NULL 
+                                         ELSE prc_low END,
+                            prc_high=CASE WHEN prc_low!=0 AND prc_high/prc_low>8 THEN NULL 
+                                          ELSE prc_high END;""",
             "query7":"""CREATE TABLE __dsf3 AS
                         SELECT *, 0 AS retadj, prc_low AS prc_low_t, prc_high AS prc_high_t,
                             LAG(prc_low) OVER (ORDER BY id, date, eom) AS prc_low_l1,
                             LAG(prc_high) OVER (ORDER BY id, date, eom) AS prc_high_l1,
                             LAG(prc) OVER (ORDER BY id, date, eom) AS prc_l1
-                            FROM __dsf2;""",
+                            FROM __dsf1;""",
             "query8":"""UPDATE __dsf3 
                         SET prc_low_l1 = CASE WHEN id!=LAG(id) OVER (ORDER BY id, date, eom) THEN NULL ELSE prc_low_l1 END,
                             prc_high_l1 = CASE WHEN id!=LAG(id) OVER (ORDER BY id, date, eom) THEN NULL ELSE prc_high_l1 END,
@@ -1818,12 +1827,8 @@ class query_storage:
                         GROUP BY a.id, a.eom;""",
             "query2":"""UPDATE dsf1 SET ret_exc = NULL, ret = NULL
                         WHERE ret_lag_dif > 14;""",
-            "query3_1":"""ALTER TABLE dsf1 DROP COLUMN ret_lag_dif;""",
-            "query3_2":"""ALTER TABLE dsf1 DROP COLUMN bidask;""",
-            "query4":"""CREATE TABLE dsf1_sorted AS 
-                        SELECT * FROM dsf1 ORDER BY id,date;""",
             "query5":"""CREATE TABLE mkt_lead_lag1 AS 
-                        SELECT excntry, date, date(date,'start of month','+1 month','-1 day') AS eom, mktrf
+                        SELECT excntry, date, INTNX_(date,0,'month','end') AS eom, mktrf
                         FROM {fcts}
                         ORDER BY excntry, date DESC;""",
             "query6":"""CREATE TABLE mkt_lead_lag2 AS  
@@ -1833,16 +1838,13 @@ class query_storage:
                                 ELSE NULL
                             END AS mktrf_ld1
                         FROM mkt_lead_lag1;""",
-            "query7":"""CREATE TABLE mkt_lead_lag3 AS
-                        SELECT * FROM mkt_lead_lag2 
-                        ORDER BY excntry,date;""",
             "query8":"""CREATE TABLE mkt_lead_lag4 AS 
                         SELECT *,
                             CASE 
                                 WHEN excntry=LAG(excntry) when LAG(mktrf) 
                                 ELSE NULL
                             END AS mktrf_lg1
-                        FROM mkt_lead_lag3;""",
+                        FROM mkt_lead_lag2;""",
             "query9":"""CREATE TABLE corr_data AS 
                         SELECT id,eom,zero_obs,
                             CASE 
@@ -1944,7 +1946,7 @@ class query_storage:
                         ORDER BY a.id, b.calc_date;""",
             "query6":"""CREATE TABLE __ff3_res1 (id TEXT, calc_date DATE, residual REAL);""",
             "query7":"""INSERT INTO __ff3_res1 (id,calc_date,residual)
-                        SELECT id,calc_date,ret_exc-(intercept+mktrf_coeff*mktrf+smb_ff_coeff*smb_ff+hml_coeff*hml) AS residual
+                        SELECT id,calc_date,ret_exc-({intercept}+{mktrf_coeff}*mktrf+{smb_ff_coeff}*smb_ff+{hml_coeff}*hml) AS residual
                         FROM calc_data
                         WHERE NOT (hml IS NULL OR smb_ff IS NULL);""",
             "query8":"""CREATE TABLE __ff3_res2 AS 

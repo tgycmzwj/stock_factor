@@ -28,6 +28,11 @@ from return_cutoffs import return_cutoffs
 from standardized_accounting_data import standardized_accounting_data
 from combine_ann_qtr_chars import combine_ann_qtr_chars
 from firm_age import firm_age
+from mispricing_factors import mispricing_factors
+from market_beta import market_beta
+from residual_momentum import residual_momentum
+from bidask_hl import bidask_hl
+from prepare_daily import prepare_daily
 
 class main():
     def run_all_procedures(self):
@@ -119,6 +124,18 @@ class main():
 
         #factor based on combined data
         firm_age(conn,cursor,data="world_msf",out="firm_age")
+        mispricing_factors(conn,cursor,out="mp_factors",data="world_data_prelim",min_stks=10,min_fcts=3)
+        market_beta(conn,cursor,out="beta_60m",data="world_msf",fcts="ap_factors_monthly",__n=60,__min=36)
+        residual_momentum(conn,cursor,out="resmom_ff3",data="world_msf",fcts="ap_factors_monthly",type="ff3",__n=36,__min=24,incl=[12,6],skip=[1,1])
+
+        #create characteristics based on daily market data
+        bidask_hl(conn,cursor,out="corwin_schultz",data="world_dsf",__min_obs=10)
+        prepare_daily(conn,cursor,data="world_dsf",fcts="ap_factors_daily")
+
+
+        #combine all characteristics and build final dataset
+        executor.execute_and_commit(queries["query4"])
+
 
 
 
